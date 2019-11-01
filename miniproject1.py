@@ -1,7 +1,7 @@
 import sqlite3
 import sys
 import random
-from datetime import date
+from datetime import datetime, timedelta, date
 '''Resources for SQLite in python and implementing user logins
 https://eclass.srv.ualberta.ca/pluginfile.php/5149362/mod_label/intro/SQLite-in-Python-1.pdf -- BEST
 https://eclass.srv.ualberta.ca/mod/page/view.php?id=3659763 -- Assignment Spec
@@ -121,7 +121,7 @@ def register_birth(): #needs nbregplace, put baby in PERSONS first
     birthregno = random.randint(1,999) #Need to make this a UNIQUE number
     nbfname = input("Newborn's First Name: ")
     nblname = input("Newborn's Last Name: ")
-    nbregdate = date.today() #Could use SQL datetime instead, not sure how this will convert
+    nbregdate = date.strftime("%Y-%m-%d") #Could use SQL datetime instead, not sure how this will convert
     #cursor.execute("SELECT city FROM users WHERE uid = ?", (username)) #Having trouble figuring out how to pass in username
     #nbregplace = cursor.fetchall()
     nbregplace = input("Newborn's birthplace: ") #needs to be 
@@ -178,7 +178,7 @@ def register_birth(): #needs nbregplace, put baby in PERSONS first
 
 def register_marriage():
     marriageno = random.randint(1,999) #Need to make this a UNIQUE number
-    marriagedate = date.today() #Could use SQL datetime instead, not sure how this will convert
+    marriagedate = date.strftime("%Y-%m-%d") #Could use SQL datetime instead, not sure how this will convert
     marriageplace = input("Where is the couple getting married?: ") #THIS needs to be the user's city again
     p1fname = input("What is partner 1's first name?: ")
     p1lname = input("What is partner 1's last name?: ")
@@ -220,13 +220,45 @@ def register_marriage():
 
 
 def renew_vehicle_Reg():
-    pass
+    vehicleregno = input("Enter the vehicle's registration number: ")
+    cursor.execute("SELECT regdate FROM registrations WHERE ? = regno", (vehicleregno))
+    rawexpiry = cursor.fetchall()
+    currentexpiry = datetime.strptime(rawexpiry, "%Y-%m-%d")
+    todays_date = date.today()
+
+    if currentexpiry <= todays_date:
+    	newexpiry = currentexpiry.replace(todays_date.year + 1)
+
+	else:
+		newexpiry = currentexpiry.replace(currentexpiry.year + 1)
+
 
 def process_bill_of_sale():
     pass
 
-def process_payment():
-    pass
+def process_payment(): #might need to worry about floats
+    ticketnumber = input("Enter the ticket number: ")
+    paymentamount = input("Enter the payment amount: ")
+    paymentdate = date.strftime("%Y-%m-%d")
+
+    cursor.execute("SELECT fine FROM tickets WHERE ? = tno", (ticketnumber))
+    fine_amount = cursor.fetchall()
+    if paymentamount > fine_amount:
+    	paymentamount = fine_amount
+    	print("You have overpaid this ticket. The true amount paid was $" + str(paymentamount))
+    	fine_amount = fine_amount - paymentamount
+    	cursor.execute("UPDATE tickets SET ? = fine WHERE ? = tno", (fine_amount, ticketnumber))
+    	conn.commit()
+    else:
+    	fine_amount = fine_amount - paymentamount
+    	print("Ticket paid for $" + str(paymentamount))
+    	cursor.execute("UPDATE tickets SET ? = fine WHERE ? = tno", (fine_amount, ticketnumber))
+    	conn.commit()
+
+    payment_data = (ticketnumber, paymentdate, paymentamount)
+    cursor.execute("INSERT INTO payments(tno, pdate, amount) VALUES (?,?,?)", payment_data)
+    conn.commit()
+
 
 def get_driver_abstract():
     pass

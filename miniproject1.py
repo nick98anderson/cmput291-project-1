@@ -1,5 +1,7 @@
 import sqlite3
 import sys
+import datetime
+from random import randrange
 '''Resources for SQLite in python and implementing user logins
 https://eclass.srv.ualberta.ca/pluginfile.php/5149362/mod_label/intro/SQLite-in-Python-1.pdf -- BEST
 https://eclass.srv.ualberta.ca/mod/page/view.php?id=3659763 -- Assignment Spec
@@ -134,10 +136,154 @@ def logout():
     pass
 
 def issue_ticket():
-    pass
+    while True:
+    regno = int(input("Enter a registration number: "))
+    cursor.execute("SELECT regno, vin, fname, lname FROM registrations WHERE regno = ?;", (regno,))
+    regInfo = cursor.fetchall()
+    print(regInfo)
+    conn.commit()
+    if regInfo[0][0] == regno:
+        break
+    else:
+        option = raw_input('Registration number not found would you like to try again (y/n): ')
+        if option == 'n':
+                return
+    
+    vin = regInfo[0][1]
+    fname = regInfo[0][2]
+    lname = regInfo[0][3]
+
+    cursor.execute("SELECT make, model, year, color FROM vehicles WHERE vin = ?;",(vin,))
+    vehicleInfo = cursor.fetchall()
+    conn.commit()
+
+    make = vehicleInfo[0][0]
+    model = vehicleInfo[0][1]
+    year = vehicleInfo[0][2]
+    color = vehicleInfo[0][3]
+    
+    print("\n***Vehicle Info***")
+    print("Make: " + str(make))
+    print("Model: " + str(model))
+    print("Year: " + str(year))
+    print("Color: " + str(color))
+
+    while True:
+        vDate = raw_input('Enter violation date (YYYY-MM-DD)')
+        vText = raw_input('Enter violation text: ')
+        fineAmount = raw_input(('Enter fine amount: '))
+
+        if fineAmount.isdigit() == False:
+            print('ERROR, Invalid fine value entered please try again')
+        
+        if vDate == '':
+            vDate = datetime.datetime.now().strftime("%Y-%m-%d")
+
+        if vText == '':
+            vText = None
+
+        else:
+            break
+    
+    tno = randrange(1000000000)
+
+    while True:
+        cursor.execute("SELECT EXISTS(SELECT 1 FROM tickets WHERE tno=?)", (tno,))
+        temp = cursor.fetchall()
+        if int(temp[0][0]) == 1:
+            tno = randrange(1000000000)
+        else:
+            conn.commit()
+            break
+
+    
+    cursor.execute("insert into tickets values(?,?,?,?,?)", (tno,regno,fineAmount,vText,vDate))
+    conn.commit()
+
 
 def find_car_owner():
-    pass
+    selectQuery = "SELECT v.vin, v.make, v.model, v.year, v.color, r.plate FROM vehicles v, registrations r WHERE "
+    carDetails = ['make', 'model', 'year', 'color', 'plate']
+    userSelections = []
+    userValues = []
+
+    for i in range(0, len(carDetails)):
+        temp = raw_input("Enter "+carDetails[i] + " (Optional): ")
+        if temp != '':
+            userValues.append(temp)
+            userSelections.append(carDetails[i])
+
+    if len(userValues) == 0:
+        print("ERROR, you must enter at least one of the fields")
+        return
+
+    
+
+    for i in range(0, len(userSelections)):
+        if userSelections[i] == 'year':
+            selectQuery += 'v.'+ userSelections[i] + '=' + userValues[i] + ' AND '
+        elif userSelections[i] == 'plate':
+            selectQuery += 'r.'+userSelections[i] + '=' + double_quote(userValues[i]) + ' AND '
+        else:
+            selectQuery += 'v.' + userSelections[i] + ' LIKE ' + double_quote(userValues[i]) + ' AND '
+        
+    selectQuery = selectQuery + ' r.vin = v.vin'
+    
+    
+    cursor.execute(selectQuery)
+    fetched = cursor.fetchall()
+
+    if len(fetched) == 0:
+        print('No results found')
+
+    elif len(fetched) >= 4:
+        formated_row = '{:<10} {:>6} {:>6} {:>6} {:>6}' 
+        i = 1
+        for row in fetched:
+            if i == 1:
+                print("    "+formated_row.format("Make", "Model", "Year", "Color", "Plate"))
+            
+            print(str(i)+ "   " + formated_row.format(row[1], row[2], row[3], row[4], row[5]))
+            i = i + 1
+
+        selectionRow = int(raw_input("Select row from vehicles for more information: "))
+
+        while selectionRow < 1 or selectionRow > len(fetched):
+            print("ERROR, invalid selection please try again")
+            selectionRow = int(raw_input("Select row from vehicles for more information: "))
+        
+        selection = fetched[selectionRow-1]
+
+        vin = str(selection[0])
+        make = str(selection[1])
+        model = str(selection[2])
+        year = str(selection[3])
+        color = str(selection[4])
+        plate = str(selection[5])
+        vinQuery = """SELECT make, model, year, color, plate,regdate, expiry, fname, lname FROM vehicles, registrations 
+                    WHERE make LIKE ? AND model LIKE ? AND year = ? AND color LIKE ? AND registrations.vin = ? ORDER BY regdate DESC LIMIT 1"""
+        
+        cursor.execute(vinQuery, (make,model,year,color,vin))
+        fetched = cursor.fetchall()
+        conn.commit
+        formated_row = '{:<10} {:^10} {:^10} {:^10} {:^10} {:^15} {:^15} {:^15} {:^15}'
+        print(formated_row.format("Make", "Model", "Year", "Color", "Plate", "Regdate", "Expiry", "First name", "Last name")) 
+        for row in fetched:
+            print(formated_row.format(*row))
+        
+    else:
+        e = selectQuery.split("WHERE", 1)[1]
+        vinQuery = "SELECT v.make, v.model, v.year, v.color, r.plate, r.regdate, r.expiry, r.fname, r.lname FROM vehicles v, registrations r WHERE" + e + " AND r.vin = v.vin ORDER BY r.regdate DESC LIMIT 1"
+        cursor.execute(vinQuery)
+        fetched = cursor.fetchall()
+        conn.commit
+        formated_row = '{:<10} {:<10} {:<10} {:<10} {:>10} {:<15} {:<15} {:<15} {:<15}'
+        print(formated_row.format("Make", "Model", "Year", "Color","Plate", "Regdate", "Expiry", "First name", "Last name")) 
+        for row in fetched:
+            print(formated_row.format(*row))
+
+
+    conn.commit()
 
 
 main()

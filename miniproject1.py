@@ -40,7 +40,7 @@ def login():
 def getUser():
     username = input("User ID: ")
     pwd = input("Password: ")
-    cursor.execute("SELECT uid, city, utype FROM users WHERE uid = ? AND pwd = ?", (username, pwd))
+    cursor.execute("SELECT utype, uid, city FROM users WHERE uid = ? AND pwd = ?", (username, pwd))
     user = cursor.fetchall()
     return user
 

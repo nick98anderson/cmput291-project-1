@@ -563,13 +563,16 @@ def get_driver_abstract():
 		print("This person has no tickets on file! Returning.")
 		return
 
-def logout():
+def logout(): 
 	print("Logging out....")
 	main()
 
 
 
 def issue_ticket():
+	'''The user should be able to provide a registration number and see the person name that is listed in the registration and the make, model, year and color of the car registered. 
+	Then the user should be able to proceed and ticket the registration by providing a violation date, a violation text and a fine amount. A unique ticket number should be assigned automatically and the ticket should be recorded. 
+	The violation date should be set to today's date if it is not provided.'''
 	
 	while True:
 		regno = int(input("Enter a registration number: "))
@@ -636,14 +639,18 @@ def issue_ticket():
 	conn.commit()
 
 
-def find_car_owner():
+def find_car_owner(): 
+	'''The user should be able to look for the owner of a car by providing one or more of make, model, year, color, and plate. 
+	The system should find and return all matches. If there are more than 4 matches, you will show only the make, model, year, color, 
+	and the plate of the matching cars and let the user select one. When there are less than 4 matches or when a car is selected from a list shown earlier, 
+	for each match, the make, model, year, color, and the plate of the matching car will be shown as well as the latest registration date, the expiry date, and the name of the person listed in the latest registration record.'''
 	selectQuery = "SELECT v.make, v.model, v.year, v.color, r.plate, regdate, expiry, fname, lname FROM vehicles v LEFT JOIN registrations r ON r.vin = v.vin WHERE "
 	carDetails = ['make', 'model', 'year', 'color', 'plate']
 	userSelections = []
 	userValues = []
 
-	for i in range(0, len(carDetails)):
-		temp = input("Enter "+carDetails[i] + " (Optional): ")
+	for i in range(0, len(carDetails)): #Store inputs of the different car details
+		temp = input("Enter "+carDetails[i] + ": ")
 		if temp != '':
 			userValues.append(temp)
 			userSelections.append(carDetails[i])

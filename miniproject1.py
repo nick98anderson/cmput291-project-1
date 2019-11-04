@@ -19,7 +19,7 @@ cursor = conn.cursor()
 cursor.execute('PRAGMA foreign_keys=ON;')   
 conn.commit()
 
-def double_quote(word):
+def single_quote(word):
     return "'%s'" % word
 
 def main():
@@ -630,16 +630,16 @@ def find_car_owner():
             if userSelections[i] == 'year':
                 selectQuery += 'v.'+ userSelections[i] + '=' + userValues[i]
             elif userSelections[i] == 'plate':
-                selectQuery += 'r.'+userSelections[i] + '=' + double_quote(userValues[i])
+                selectQuery += 'r.'+userSelections[i] + '=' + single_quote(userValues[i])
             else:
-                selectQuery += 'v.' + userSelections[i] + ' LIKE ' + double_quote(userValues[i])
+                selectQuery += 'v.' + userSelections[i] + ' LIKE ' + single_quote(userValues[i])
         else:
             if userSelections[i] == 'year':
                 selectQuery += 'v.'+ userSelections[i] + '=' + userValues[i] + ' AND '
             elif userSelections[i] == 'plate':
-                selectQuery += 'r.'+userSelections[i] + '=' + double_quote(userValues[i]) + ' AND '
+                selectQuery += 'r.'+userSelections[i] + '=' + single_quote(userValues[i]) + ' AND '
             else:
-                selectQuery += 'v.' + userSelections[i] + ' LIKE ' + double_quote(userValues[i]) + ' AND '
+                selectQuery += 'v.' + userSelections[i] + ' LIKE ' + single_quote(userValues[i]) + ' AND '
     
     selectQuery += " GROUP BY v.vin"
 

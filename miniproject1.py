@@ -274,6 +274,7 @@ def renew_vehicle_Reg(): #SWITCH FOR PYTHON 2, FULLY FUNCTIONAL AS OF RIGHT NOW
 
 	cursor.execute("UPDATE registrations SET expiry = ? WHERE regno = ?", (newexpiry, vehicleregno))
 	conn.commit()
+	print("Vehicle registration renewed! Returning.")
 
 
 def process_bill_of_sale(): #NEED TO CONTROL FOR EXISTING LICENSE PLATE NO. IF HAVE TIME, not explicitly specified. NEED TO SWAP FOR PYTHON 2
@@ -530,7 +531,9 @@ def get_driver_abstract(): #NEED TO ADJUST FOR PYTHON 2
 			for row in abstract_info:
 				print(row)
 
-
+def logout():
+    print("Logging out....")
+    main()
 
 
 

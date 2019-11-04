@@ -19,16 +19,16 @@ def double_quote(word):
 
 def main():
     print("***WELCOME****")
-    userType = login()
+    user = login()
     
 
-    if userType[0][0] == 'a':
-        agent_prompt()
+    if user[0][0] == 'a':
+        agent_prompt(str(user[0][1]))
 
-    elif userType[0][0] == 'o':
+    elif user[0][0] == 'o':
         officer_prompt()
     else:
-        print(userType[0][0])
+        print(user[0][0])
         print("error")
 
 
@@ -46,7 +46,7 @@ def login():
 def getUser():
     username = raw_input("User ID: ")
     pwd = raw_input("Password: ")
-    cursor.execute("SELECT utype FROM users WHERE uid = ? AND pwd = ?", (username, pwd))
+    cursor.execute("SELECT utype, city FROM users WHERE uid = ? AND pwd = ?", (username, pwd))
     user = cursor.fetchall()
     return user
 
@@ -101,7 +101,7 @@ def agent_prompt():
             display_agent_options()
 
             
-def display_agent_options():
+def display_agent_options(city):
     print("****Options****")
     print("Register birth (press 0)")
     print("Register Marriage (press 1)")

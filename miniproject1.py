@@ -69,7 +69,7 @@ def officer_prompt():
             display_officer_options()
 
 
-def agent_prompt():
+def agent_prompt(user):
 
     display_agent_options()
 

@@ -51,7 +51,7 @@ def login():
 def getUser():
     username = input("User ID: ")
     pwd = input("Password: ")
-    cursor.execute("SELECT utype, city FROM users WHERE uid = ? AND pwd = ?", (username, pwd))
+    cursor.execute("SELECT utype, city FROM users WHERE uid LIKE ? AND pwd = ?", (username, pwd))
     user = cursor.fetchall()
     return user
 
@@ -93,10 +93,10 @@ def agent_prompt(user):
         option = int(input_option)
 
         if option == 0:
-            register_birth()
+            register_birth(user)
             display_agent_options()
         elif option == 1:
-            register_marriage()
+            register_marriage(user)
             display_agent_options()
         elif option == 2:
             renew_vehicle_Reg()
@@ -135,7 +135,7 @@ def display_officer_options():
 	print("Logout (press 2)")
 
 
-def register_birth(): #needs nbregplace and new unique id generator
+def register_birth(user): #needs nbregplace and new unique id generator
 	'''The agent should be able to register a birth by providing the first name, the last name, the gender, the birth date, the birth place of the newborn, 
 	as well as the first and last names of the parents. The registration date is set to the day of registration (today's date) and the registration place is set to the city of the user. 
 	The system should automatically assign a unique registration number to the birth record. The address and the phone of the newborn are set to those of the mother. If any of the parents is not in the database, 
@@ -148,11 +148,9 @@ def register_birth(): #needs nbregplace and new unique id generator
 	if nbperson != []:
 		print("This newborn is already registered as a person in the database. Returning to agent options.")
 		return
-	nbregdate = date.today() #Could use SQL datetime instead, not sure how this will convert
-	#cursor.execute("SELECT city FROM users WHERE uid = ?", (username)) #Having trouble figuring out how to pass in username
-	#nbregplace = cursor.fetchall()
-	nbregplace = input("Newborn's birthplace: ") #needs to be 
-	nbgender = input("Newborn's Gender (M/F): ") #https://stackoverflow.com/questions/8761778/limiting-python-input-strings-to-certain-characters-and-lengths
+	nbregdate = date.today()
+	nbregplace = str(user)
+	nbgender = input("Newborn's Gender (M/F): ") 
 	nbf_fname = input("Newborn's Father's First Name: ")
 	nbf_lname = input("Newborn's Father's Last Name: ")
 	nbm_fname = input("Newborn's Mother's First Name: ")
@@ -203,13 +201,14 @@ def register_birth(): #needs nbregplace and new unique id generator
 	
 	
 
-def register_marriage(): #only thing needed is regplace and new uniqueID generator
+def register_marriage(user): #only thing needed is regplace and new uniqueID generator
 	'''The user should be able to provide the names of the partners and the system should assign the registration date and place and a unique registration number as discussed in registering a birth. 
 	If any of the partners is not found in the database, the system should get information about the partner including first name, last name, birth date, birth place, address and phone. 
 	For each partner, any column other than the first name and last name can be null if it is not provided.'''
 	marriageno = generateUniqueID() #Need to make this a UNIQUE number
 	marriagedate = date.today() #Could use SQL datetime instead, not sure how this will convert
-	marriageplace = input("Where is the couple getting married?: ") #THIS needs to be the user's city again
+	#marriageplace = input("Where is the couple getting married?: ") #THIS needs to be the user's city again
+	marriageplace = str(user)
 	p1fname = input("What is partner 1's first name?: ")
 	p1lname = input("What is partner 1's last name?: ")
 	p2fname = input("What is partner 2's first name?: ")
@@ -257,6 +256,9 @@ def renew_vehicle_Reg(): #SWITCH FOR PYTHON 2, FULLY FUNCTIONAL AS OF RIGHT NOW
 	vehicleregno = input("Enter the vehicle's registration number: ")
 	cursor.execute("SELECT expiry FROM registrations WHERE ? = regno", (vehicleregno,))
 	rawexpiry = cursor.fetchall()
+	if rawexpiry == []:
+		print("That registration number is invalid! Returning to agent options.")
+		return
 	rawexpirystring = str(rawexpiry)
 	#rawexpirystring = rawexpirystring.translate(None, '[(,)]') #This DOESNT work in python 3, but DOES in python 2
 	rawexpirystring = rawexpirystring.translate({ord(i):None for i in '[(,)]'}) #This DOESNT work in python 2, but DOES in python 3
@@ -283,9 +285,7 @@ def process_bill_of_sale(): #NEED TO CONTROL FOR EXISTING LICENSE PLATE NO. IF H
 	entered_vin = input("What is the VIN of the vehicle that is to be sold?: ")
 	current_owner_fname = input("What is the first name of the vehicle's current owner?: ")
 	current_owner_lname = input("What is the last name of the vehicle's current owner?: ")
-	new_owner_fname = input("What is the first name of the new owner?: ")
-	new_owner_lname = input("What is the last name of the new owner?: ")
-	entered_plate = input("What is the requested new license plate number?: ")
+	
 
 	cursor.execute("SELECT r.fname FROM registrations r WHERE ? = r.vin AND ? LIKE r.fname AND ? LIKE r.lname AND regdate = (SELECT max(r2.regdate) FROM registrations r2 WHERE r.fname = r2.fname AND r.lname = r2.lname AND r.vin = r2.vin)", (entered_vin, current_owner_fname, current_owner_lname))
 	latest_owner_fname = cursor.fetchall() #Need to heavily test this query, mostly for case sensitivity
@@ -315,7 +315,7 @@ def process_bill_of_sale(): #NEED TO CONTROL FOR EXISTING LICENSE PLATE NO. IF H
 
 
 	if (latest_owner_fname == []) or (latest_owner_lname ==[]):
-		print("This person does not exist in the database. Exiting.")
+		print("This person and/or vehicle does not exist in the database. Exiting.")
 		return
 
 	elif (str_latest_owner_fname_lower != current_owner_fname.lower()) or (str_latest_owner_lname_lower != current_owner_lname.lower()):
@@ -323,6 +323,9 @@ def process_bill_of_sale(): #NEED TO CONTROL FOR EXISTING LICENSE PLATE NO. IF H
 		return
 
 	else: 
+		new_owner_fname = input("What is the first name of the new owner?: ")
+		new_owner_lname = input("What is the last name of the new owner?: ")
+		entered_plate = input("What is the requested new license plate number?: ")
 		current_expiry = date.today()
 		cursor.execute("UPDATE registrations SET expiry = ? WHERE vin = ?", (current_expiry, entered_vin))
 		conn.commit()
@@ -646,12 +649,12 @@ def find_car_owner():
             if i == 1:
                 print("    "+formated_row.format("Make", "Model", "Year", "Color", "Plate"))
             
-            print(str(i)+ "   " + formated_row.format(str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4]))
+            print(str(i)+ "   " + formated_row.format(str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4])))
             i = i + 1
 
         selectionRow = int(input("Select row from vehicles for more information: "))
 
-        while selectionRow < 1 or selectionRow > len(fetched):
+        while (selectionRow < 1) or (selectionRow > len(fetched)):
             print("ERROR, invalid selection please try again")
             selectionRow = int(input("Select row from vehicles for more information: "))
         

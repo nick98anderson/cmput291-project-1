@@ -1,7 +1,7 @@
 import sqlite3
 import sys
 import random
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, time
 '''Resources for SQLite in python and implementing user logins
 https://eclass.srv.ualberta.ca/pluginfile.php/5149362/mod_label/intro/SQLite-in-Python-1.pdf -- BEST
 https://eclass.srv.ualberta.ca/mod/page/view.php?id=3659763 -- Assignment Spec
@@ -9,359 +9,535 @@ https://github.com/imilas/291PyLab -- BEST
 https://eclass.srv.ualberta.ca/pluginfile.php/5149359/mod_label/intro/QL-eSQL.pdf?time=1567207038507 -- SQL inside applications slides
 https://stackoverflow.com/questions/973541/how-to-set-sqlite3-to-be-case-insensitive-when-string-comparing -- Case sensitive for SQL'''
 
+
+#CASE SENSITIVITY IMPORTANT, ERROR HANDLING WHEN IMPROPER INPUT IMPORTANT
+
 db = sys.argv[1]
 conn = sqlite3.connect(db)
 cursor = conn.cursor()
-cursor.execute('PRAGMA foreign_keys=ON;')	
+cursor.execute('PRAGMA foreign_keys=ON;')   
 conn.commit()
 
 def main():
-    userType = login()
-    
+	userType = login()
+	
 
-    if userType[0][0] == 'a':
-        agent_prompt()
+	if userType[0][0] == 'a':
+		agent_prompt()
 
-    elif userType[0][0] == 'o':
-        officer_prompt()
-    else:
-        print(userType[0][0])
-        print("error")
+	elif userType[0][0] == 'o':
+		officer_prompt()
+	else:
+		print(userType[0][0])
+		print("error")
 
 
 def login():
-    isUser = False
-    while isUser == False:
-        user = getUser()
-        if len(user) != 0:
-            isUser = True
-        else:
-            print("Invalid user id or password, please try again")
-    return user 
+	isUser = False
+	while isUser == False:
+		user = getUser()
+		if len(user) != 0:
+			isUser = True
+		else:
+			print("Invalid user id or password, please try again")
+	return user 
 
 
 def getUser():
-    username = input("User ID: ")
-    pwd = input("Password: ")
-    cursor.execute("SELECT utype FROM users WHERE uid = ? AND pwd = ?", (username, pwd))
-    user = cursor.fetchall()
-    return user
+	username = input("User ID: ")
+	pwd = input("Password: ")
+	cursor.execute("SELECT utype FROM users WHERE uid = ? AND pwd = ?", (username, pwd))
+	user = cursor.fetchall()
+	return user
+
+def generateUniqueID():
+	existing_IDs = []
+	numbers = list(range(10000))
+	random_number = random.choice(numbers)
+	while random_number in existing_IDs:
+		generateUniqueID()
+	existing_IDs.append(random_number)
+	return random_number
 
 def officer_prompt():
-    display_officer_options()
+	display_officer_options()
 
-    while True:
-        option = input("Select option: ")
+	while True:
+		option = input("Select option: ")
 
-        if option == 0:
-            issue_ticket()
-            display_officer_options()
-        elif option == 1:
-            find_car_owner()
-            display_officer_options()
-        elif option == 2:
-            break
-        else:
-            print("****ERROR***** invalid option please try again")
-            display_officer_options()
+		if option == 0:
+			issue_ticket()
+			display_officer_options()
+		elif option == 1:
+			find_car_owner()
+			display_officer_options()
+		elif option == 2:
+			break
+		else:
+			print("****ERROR***** invalid option please try again")
+			display_officer_options()
 
 
 def agent_prompt():
 
-    display_agent_options()
+	display_agent_options()
 
-    while True:
-        input_option = input("Selection option: ")
-        option = int(input_option)
+	while True:
+		input_option = input("Selection option: ")
+		option = int(input_option)
 
-        if option == 0:
-            register_birth()
-            display_agent_options()
-        elif option == 1:
-            register_marriage()
-            display_agent_options()
-        elif option == 2:
-            renew_vehicle_Reg()
-            display_agent_options()
-        elif option == 3:
-            process_bill_of_sale()
-            display_agent_options()
-        elif option == 4:
-            process_payment()
-            display_agent_options()
-        elif option == 5:
-            get_driver_abstract()
-            display_agent_options()
-        elif option == 6:
-            break
-            #logout()
-        else:
-            print("****ERROR***** invalid option please try again")
-            display_agent_options()
+		if option == 0:
+			register_birth()
+			display_agent_options()
+		elif option == 1:
+			register_marriage()
+			display_agent_options()
+		elif option == 2:
+			renew_vehicle_Reg()
+			display_agent_options()
+		elif option == 3:
+			process_bill_of_sale()
+			display_agent_options()
+		elif option == 4:
+			process_payment()
+			display_agent_options()
+		elif option == 5:
+			get_driver_abstract()
+			display_agent_options()
+		elif option == 6:
+			break
+			#logout()
+		else:
+			print("****ERROR***** invalid option please try again")
+			display_agent_options()
 
-            
+			
 def display_agent_options():
-    print("****Options****")
-    print("Register birth (press 0)")
-    print("Register Marriage (press 1)")
-    print("Renew Vehicle Registration (press 2)")
-    print("Process Bill of Sale (press 3)")
-    print("Process Payment (press 4)")
-    print("Get Driver Abstract (press 5)")
-    print("Logout (press 6)")
+	print("****Options****")
+	print("Register birth (press 0)")
+	print("Register Marriage (press 1)")
+	print("Renew Vehicle Registration (press 2)")
+	print("Process Bill of Sale (press 3)")
+	print("Process Payment (press 4)")
+	print("Get Driver Abstract (press 5)")
+	print("Logout (press 6)")
 
 
 def display_officer_options():
-    print("****Options****")
-    print("Issue a Ticket (press 0)")
-    print("Find Car Owner (press 1)")
-    print("Logout (press 2)")
+	print("****Options****")
+	print("Issue a Ticket (press 0)")
+	print("Find Car Owner (press 1)")
+	print("Logout (press 2)")
 
 
-def register_birth(): #needs nbregplace, put baby in PERSONS first
+def register_birth(): #needs nbregplace and new unique id generator
 	'''The agent should be able to register a birth by providing the first name, the last name, the gender, the birth date, the birth place of the newborn, 
 	as well as the first and last names of the parents. The registration date is set to the day of registration (today's date) and the registration place is set to the city of the user. 
 	The system should automatically assign a unique registration number to the birth record. The address and the phone of the newborn are set to those of the mother. If any of the parents is not in the database, 
 	the system should get information about the parent including first name, last name, birth date, birth place, address and phone. For each parent, any column other than the first name and last name can be null if it is not provided.'''
-    birthregno = random.randint(1,999) #Need to make this a UNIQUE number
-    nbfname = input("Newborn's First Name: ")
-    nblname = input("Newborn's Last Name: ")
-    nbregdate = date.strftime("%Y-%m-%d") #Could use SQL datetime instead, not sure how this will convert
-    #cursor.execute("SELECT city FROM users WHERE uid = ?", (username)) #Having trouble figuring out how to pass in username
-    #nbregplace = cursor.fetchall()
-    nbregplace = input("Newborn's birthplace: ") #needs to be 
-    nbgender = input("Newborn's Gender (M/F): ") #https://stackoverflow.com/questions/8761778/limiting-python-input-strings-to-certain-characters-and-lengths
-    nbf_fname = input("Newborn's Father's First Name: ")
-    nbf_lname = input("Newborn's Father's Last Name: ")
-    nbm_fname = input("Newborn's Mother's First Name: ")
-    nbm_lname = input("Newborn's Mother's Last Name: ")
+	birthregno = generateUniqueID()
+	nbfname = input("Newborn's First Name: ")
+	nblname = input("Newborn's Last Name: ")
+	cursor.execute("SELECT fname, lname FROM persons WHERE ? LIKE fname AND ? LIKE lname", (nbfname, nblname))
+	nbperson = cursor.fetchall()
+	if nbperson != []:
+		print("This newborn is already registered as a person in the database. Returning to agent options.")
+		return
+	nbregdate = date.today() #Could use SQL datetime instead, not sure how this will convert
+	#cursor.execute("SELECT city FROM users WHERE uid = ?", (username)) #Having trouble figuring out how to pass in username
+	#nbregplace = cursor.fetchall()
+	nbregplace = input("Newborn's birthplace: ") #needs to be 
+	nbgender = input("Newborn's Gender (M/F): ") #https://stackoverflow.com/questions/8761778/limiting-python-input-strings-to-certain-characters-and-lengths
+	nbf_fname = input("Newborn's Father's First Name: ")
+	nbf_lname = input("Newborn's Father's Last Name: ")
+	nbm_fname = input("Newborn's Mother's First Name: ")
+	nbm_lname = input("Newborn's Mother's Last Name: ")
 
-    cursor.execute("SELECT fname, lname FROM persons WHERE ? = fname AND ? = lname", (nbm_fname, nbm_lname))
-    nbmother = cursor.fetchall()
-    cursor.execute("SELECT fname, lname FROM persons WHERE ? = fname AND ? = lname", (nbf_fname, nbf_lname))
-    nbfather = cursor.fetchall()
+	cursor.execute("SELECT fname, lname FROM persons WHERE ? LIKE fname AND ? LIKE lname", (nbm_fname, nbm_lname))
+	nbmother = cursor.fetchall()
+	cursor.execute("SELECT fname, lname FROM persons WHERE ? LIKE fname AND ? LIKE lname", (nbf_fname, nbf_lname))
+	nbfather = cursor.fetchall()
 
-    while nbmother == []:
-    	nbm_fname = input("Confirm Mother's first name: ") # Need to make sure this isn't null
-    	nbm_lname = input("Confirm Mother's last name: ") # Need to make sure this isn't null
-    	motherbdate = input("What is the Mother's birth date? (YYYY-MM-DD): ")
-    	motherbplace = input("What is the Mother's birth place? (format): ")
-    	motheraddress = input("What is the Mother's address? (format): ")
-    	motherphone = input("What is the Mother's phone number?: (###-###-####)")
-    	mother_data = (motherfname,motherlname,motherbdate,motherbplace,motheraddress,motherphone)
-    	cursor.execute("INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)", mother_data)
-    	conn.commit()
-    	break
+	while nbmother == []:
+		nbm_fname = input("Confirm Mother's first name: ") # Need to make sure this isn't null
+		nbm_lname = input("Confirm Mother's last name: ") # Need to make sure this isn't null
+		motherbdate = input("What is the Mother's birth date? (YYYY-MM-DD): ")
+		motherbplace = input("What is the Mother's birth place? (format): ")
+		motheraddress = input("What is the Mother's address? (format): ")
+		motherphone = input("What is the Mother's phone number?: (###-###-####)")
+		mother_data = (motherfname,motherlname,motherbdate,motherbplace,motheraddress,motherphone)
+		cursor.execute("INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)", mother_data)
+		conn.commit()
+		break
 
-    while nbfather == []:
-    	nbf_fname = input("Confirm Father's first name: ") # Need to make sure this isn't null
-    	nbf_lname = input("Confirm Father's last name: ") # Need to make sure this isn't null
-    	fatherbdate = input("What is the Father's birth date? (YYYY-MM-DD): ")
-    	fatherbplace = input("What is the Father's birth place?: ")
-    	fatheraddress = input("What is the Father's address?: ")
-    	fatherphone = input("What is the Father's phone number? (###-###-####): ")
-    	father_data = (fatherfname,fatherlname,fatherbdate,fatherbplace,fatheraddress,fatherphone)
-    	cursor.execute("INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)", father_data)
-    	conn.commit()
-    	break
+	while nbfather == []:
+		nbf_fname = input("Confirm Father's first name: ") # Need to make sure this isn't null
+		nbf_lname = input("Confirm Father's last name: ") # Need to make sure this isn't null
+		fatherbdate = input("What is the Father's birth date? (YYYY-MM-DD): ")
+		fatherbplace = input("What is the Father's birth place?: ")
+		fatheraddress = input("What is the Father's address?: ")
+		fatherphone = input("What is the Father's phone number? (###-###-####): ")
+		father_data = (fatherfname,fatherlname,fatherbdate,fatherbplace,fatheraddress,fatherphone)
+		cursor.execute("INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)", father_data)
+		conn.commit()
+		break
 
-    cursor.execute("SELECT address FROM persons WHERE ? = fname AND ? = lname", (nbm_fname, nbm_lname)) #Finds mother's address
-    nbaddress = cursor.fetchall()
-    cursor.execute("SELECT phone FROM persons WHERE ? = fname AND ? = lname", (nbm_fname, nbm_lname)) #Finds mother's phone number
-    nbphone = cursor.fetchall()
+	cursor.execute("SELECT address FROM persons WHERE ? LIKE fname AND ? LIKE lname", (nbm_fname, nbm_lname)) #Finds mother's address
+	nbaddress = cursor.fetchall()
+	cursor.execute("SELECT phone FROM persons WHERE ? LIKE fname AND ? LIKE lname", (nbm_fname, nbm_lname)) #Finds mother's phone number
+	nbphone = cursor.fetchall()
 
-    baby_data = (birthregno,nbfname,nblname,nbregdate,nbregplace,nbgender,nbf_fname,nbf_lname,nbm_fname,nbm_lname)
-    person_data = (nbfname, nblname, nbregdate, nbregplace, str(nbaddress), str(nbphone))
-    cursor.execute("INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)", person_data) #First we register the baby as a person
-    conn.commit()
-    cursor.execute("INSERT INTO births(regno, fname, lname, regdate, regplace, gender, f_fname, f_lname, m_fname, m_lname) VALUES (?,?,?,?,?,?,?,?,?,?)", baby_data) #We then register it as a birth
-    conn.commit()
-    print("Registration Complete! Returning to Agent Options")
-    
-    
-    
+	baby_data = (birthregno,nbfname,nblname,nbregdate,nbregplace,nbgender,nbf_fname,nbf_lname,nbm_fname,nbm_lname)
+	person_data = (nbfname, nblname, nbregdate, nbregplace, str(nbaddress), str(nbphone))
+	cursor.execute("INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)", person_data) #First we register the baby as a person
+	conn.commit()
+	cursor.execute("INSERT INTO births(regno, fname, lname, regdate, regplace, gender, f_fname, f_lname, m_fname, m_lname) VALUES (?,?,?,?,?,?,?,?,?,?)", baby_data) #We then register it as a birth
+	conn.commit()
+	print("Registration Complete! Returning to Agent Options")
+	
+	
+	
 
-def register_marriage():
+def register_marriage(): #only thing needed is regplace and new uniqueID generator
 	'''The user should be able to provide the names of the partners and the system should assign the registration date and place and a unique registration number as discussed in registering a birth. 
 	If any of the partners is not found in the database, the system should get information about the partner including first name, last name, birth date, birth place, address and phone. 
 	For each partner, any column other than the first name and last name can be null if it is not provided.'''
-    marriageno = random.randint(1,999) #Need to make this a UNIQUE number
-    marriagedate = date.strftime("%Y-%m-%d") #Could use SQL datetime instead, not sure how this will convert
-    marriageplace = input("Where is the couple getting married?: ") #THIS needs to be the user's city again
-    p1fname = input("What is partner 1's first name?: ")
-    p1lname = input("What is partner 1's last name?: ")
-    p2fname = input("What is partner 2's first name?: ")
-    p2lname = input("What is partner 2's last name?: ")
+	marriageno = generateUniqueID() #Need to make this a UNIQUE number
+	marriagedate = date.today() #Could use SQL datetime instead, not sure how this will convert
+	marriageplace = input("Where is the couple getting married?: ") #THIS needs to be the user's city again
+	p1fname = input("What is partner 1's first name?: ")
+	p1lname = input("What is partner 1's last name?: ")
+	p2fname = input("What is partner 2's first name?: ")
+	p2lname = input("What is partner 2's last name?: ")
 
-    cursor.execute("SELECT fname, lname FROM persons WHERE ? = fname AND ? = lname", (p1fname, p1lname))
-    partner1 = cursor.fetchall()
-    cursor.execute("SELECT fname, lname FROM persons WHERE ? = fname AND ? = lname", (p2fname, p2lname))
-    partner2 = cursor.fetchall()
+	cursor.execute("SELECT fname, lname FROM persons WHERE ? LIKE fname AND ? LIKE lname", (p1fname, p1lname))
+	partner1 = cursor.fetchall()
+	cursor.execute("SELECT fname, lname FROM persons WHERE ? LIKE fname AND ? LIKE lname", (p2fname, p2lname))
+	partner2 = cursor.fetchall()
 
-    while partner1 == []:
-    	p1fname = input("Confirm Partner 1's first name: ") # Need to make sure this isn't null
-    	p1lname = input("Confirm Partner 1's last name: ") # Need to make sure this isn't null
-    	partner1bdate = input("What is Partner 1's birth date? (YYYY-MM-DD): ")
-    	partner1bplace = input("What is the Partner 1's birth place? (format): ")
-    	partner1address = input("What is the Partner 1's address? (format): ")
-    	partner1phone = input("What is the Partner 1's phone number?: (###-###-####)")
-    	partner1_data = (p1fname,p1lname,partner1bdate,partner1bplace,partner1address,partner1phone)
-    	cursor.execute("INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)", partner1_data)
-    	conn.commit()
-    	break
+	while partner1 == []:
+		p1fname = input("Confirm Partner 1's first name: ") # Need to make sure this isn't null
+		p1lname = input("Confirm Partner 1's last name: ") # Need to make sure this isn't null
+		partner1bdate = input("What is Partner 1's birth date? (YYYY-MM-DD): ")
+		partner1bplace = input("What is the Partner 1's birth place? (format): ")
+		partner1address = input("What is the Partner 1's address? (format): ")
+		partner1phone = input("What is the Partner 1's phone number?: (###-###-####)")
+		partner1_data = (p1fname,p1lname,partner1bdate,partner1bplace,partner1address,partner1phone)
+		cursor.execute("INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)", partner1_data)
+		conn.commit()
+		break
 
-    while partner2 == []:
-    	p2fname = input("Confirm Partner 2's first name: ") # Need to make sure this isn't null
-    	p2lname = input("Confirm Partner 2's last name: ") # Need to make sure this isn't null
-    	partner2bdate = input("What is the Partner 2's birth date? (YYYY-MM-DD): ")
-    	partner2bplace = input("What is the Partner 2's birth place?: ")
-    	partner2address = input("What is the Partner 2's address?: ")
-    	partner2phone = input("What is the Partner 2's phone number? (###-###-####): ")
-    	partner2_data = (p2fname,p2lname,partner2bdate,partner2bplace,partner2address,partner2phone)
-    	cursor.execute("INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)", partner2_data)
-    	conn.commit()
-    	break
+	while partner2 == []:
+		p2fname = input("Confirm Partner 2's first name: ") # Need to make sure this isn't null
+		p2lname = input("Confirm Partner 2's last name: ") # Need to make sure this isn't null
+		partner2bdate = input("What is the Partner 2's birth date? (YYYY-MM-DD): ")
+		partner2bplace = input("What is the Partner 2's birth place?: ")
+		partner2address = input("What is the Partner 2's address?: ")
+		partner2phone = input("What is the Partner 2's phone number? (###-###-####): ")
+		partner2_data = (p2fname,p2lname,partner2bdate,partner2bplace,partner2address,partner2phone)
+		cursor.execute("INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)", partner2_data)
+		conn.commit()
+		break
 
-    marriage_data = (marriageno,marriagedate,marriageplace,p1fname,p1lname,p2fname,p2lname)
-    cursor.execute("INSERT INTO marriages(regno,regdate,regplace,p1_fname,p1_lname,p2_fname,p2_lname) VALUES (?,?,?,?,?,?,?)", marriage_data)
-    conn.commit()
+	marriage_data = (marriageno,marriagedate,marriageplace,p1fname,p1lname,p2fname,p2lname)
+	cursor.execute("INSERT INTO marriages(regno,regdate,regplace,p1_fname,p1_lname,p2_fname,p2_lname) VALUES (?,?,?,?,?,?,?)", marriage_data)
+	conn.commit()
+	print("Registration Complete! Returning to Agent Options")
 
 
-def renew_vehicle_Reg():
+def renew_vehicle_Reg(): #SWITCH FOR PYTHON 2, FULLY FUNCTIONAL AS OF RIGHT NOW
 	'''The user should be able to provide an existing registration number and renew the registration. 
 	The system should set the new expiry date to one year from today's date if the current registration either has expired or expires today. 
 	Otherwise, the system should set the new expiry to one year after the current expiry date.'''
-    vehicleregno = input("Enter the vehicle's registration number: ")
-    cursor.execute("SELECT regdate FROM registrations WHERE ? = regno", (vehicleregno))
-    rawexpiry = cursor.fetchall()
-    currentexpiry = datetime.strptime(rawexpiry, "%Y-%m-%d")
-    todays_date = date.strftime("%Y-%m-%d")
+	vehicleregno = input("Enter the vehicle's registration number: ")
+	cursor.execute("SELECT expiry FROM registrations WHERE ? = regno", (vehicleregno,))
+	rawexpiry = cursor.fetchall()
+	rawexpirystring = str(rawexpiry)
+	#rawexpirystring = rawexpirystring.translate(None, '[(,)]') #This DOESNT work in python 3, but DOES in python 2
+	rawexpirystring = rawexpirystring.translate({ord(i):None for i in '[(,)]'}) #This DOESNT work in python 2, but DOES in python 3
+	currentexpiry = datetime.strptime(rawexpirystring, "'%Y-%m-%d'").date()
+	#currentexpiry = str(rawexpiry).strftime("%Y-%m-%d")
+	todays_date = date.today()
 
-    if currentexpiry <= todays_date:
-    	newexpiry = currentexpiry.replace(todays_date.year + 1)
+	if currentexpiry <= todays_date:
+		newexpiry = todays_date.replace(todays_date.year + 1)
 
 	else:
 		newexpiry = currentexpiry.replace(currentexpiry.year + 1)
 
+	cursor.execute("UPDATE registrations SET expiry = ? WHERE regno = ?", (newexpiry, vehicleregno))
+	conn.commit()
 
-def process_bill_of_sale():
+
+def process_bill_of_sale(): #NEED TO CONTROL FOR EXISTING LICENSE PLATE NO. IF HAVE TIME, not explicitly specified. NEED TO SWAP FOR PYTHON 2
 	'''The user should be able to record a bill of sale by providing the vin of a car, the name of the current owner, the name of the new owner, and a plate number for the new registration. 
 	If the name of the current owner (that is provided) does not match the name of the most recent owner of the car in the system, the transfer cannot be made. 
 	When the transfer can be made, the expiry date of the current registration is set to today's date and a 
 	new registration under the new owner's name is recorded with the registration date and the expiry date set by the system to today's date and a year after today's date respectively. 
 	Also a unique registration number should be assigned by the system to the new registration. The vin will be copied from the current registration to the new one.'''
-    entered_vin = input("What is the VIN of the vehicle that is to be sold?: ")
-    current_owner_fname = input("What is the first name of the vehicle's current owner?: ")
-    current_owner_lname = input("What is the last name of the vehicle's current owner?: ")
-    new_owner = input("What is the name of the new owner?: ")
-    entered_plate = input("What is the requested new license plate number?: ")
+	entered_vin = input("What is the VIN of the vehicle that is to be sold?: ")
+	current_owner_fname = input("What is the first name of the vehicle's current owner?: ")
+	current_owner_lname = input("What is the last name of the vehicle's current owner?: ")
+	new_owner_fname = input("What is the first name of the new owner?: ")
+	new_owner_lname = input("What is the last name of the new owner?: ")
+	entered_plate = input("What is the requested new license plate number?: ")
 
-    cursor.execute("SELECT r.fname, r.lname FROM registrations r WHERE ? = r.vin AND ? = r.fname AND ? = r.lname AND regdate = (SELECT max(r2.regdate) FROM registrations r2 WHERE r.fname = r2.fname AND r.lname = r2.lname AND r.vin = r2.vin)", (current_owner_fname, current_owner_lname, entered_vin))
-    latest_owner = cursor.fetchall() #Need to heavily test this query, mostly for case sensitivity
+	cursor.execute("SELECT r.fname FROM registrations r WHERE ? = r.vin AND ? LIKE r.fname AND ? LIKE r.lname AND regdate = (SELECT max(r2.regdate) FROM registrations r2 WHERE r.fname = r2.fname AND r.lname = r2.lname AND r.vin = r2.vin)", (entered_vin, current_owner_fname, current_owner_lname))
+	latest_owner_fname = cursor.fetchall() #Need to heavily test this query, mostly for case sensitivity
+	conn.commit()
+	cursor.execute("SELECT r.lname FROM registrations r WHERE ? = r.vin AND ? LIKE r.fname AND ? LIKE r.lname AND regdate = (SELECT max(r2.regdate) FROM registrations r2 WHERE r.fname = r2.fname AND r.lname = r2.lname AND r.vin = r2.vin)", (entered_vin, current_owner_fname, current_owner_lname))
+	latest_owner_lname = cursor.fetchall() #Need to heavily test this query, mostly for case sensitivity
+	conn.commit()
 
+	
+	str_latest_owner_fname = str(latest_owner_fname)
+	#str_latest_owner_fname = str_latest_owner_fname.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
+	str_latest_owner_fname = str_latest_owner_fname.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
 
-    if latest_owner == []:
-    	print("This person does not exist in the database. Exiting.")
-    	display_agent_options()
-
-    elif (latest_owner[0].lower() != current_owner_fname.lower()) OR (latest_owner[1].lower() != current_owner_fname.lower()):
-    	print("The name you have entered is not the latest owner of this vehicle. Exiting.")
-    	display_agent_options()
-
-    else: 
-    	current_expiry = date.strftime("%Y-%m-%d")
-    	cursor.execute("UPDATE registrations SET ? = expiry WHERE ? = vin", (current_expiry, entered_vin))
-    	new_registration_date = date.strftime("%Y-%m-%d")
-    	new_expiry_date = current_expiry.replace(current_expiry.year + 1)
-    	unique_registration_number = random.randint(1,999) #Need to make this a UNIQUE number
-    	new_owner_data = (unique_registration_number, new_registration_date, new_expiry_date, entered_plate, entered_vin, current_owner_fname, current_owner_lname)
-    	cursor.execute("INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?,?,?,?,?,?,?)", new_owner_data)
-    	conn.commit()
+	
+	str_latest_owner_lname = str(latest_owner_lname)
+	#str_latest_owner_fname = str_latest_owner_fname.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
+	str_latest_owner_lname = str_latest_owner_lname.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
 
 
+	str_latest_owner_fname = str_latest_owner_fname.strip("''")
+	str_latest_owner_lname = str_latest_owner_lname.strip("''")
+
+	str_latest_owner_fname_lower = str_latest_owner_fname.lower()
+	str_latest_owner_lname_lower = str_latest_owner_lname.lower()
 
 
 
-def process_payment(): #might need to worry about floats
+
+	if (latest_owner_fname == []) or (latest_owner_lname ==[]):
+		print("This person does not exist in the database. Exiting.")
+		return
+
+	elif (str_latest_owner_fname_lower != current_owner_fname.lower()) or (str_latest_owner_lname_lower != current_owner_lname.lower()):
+		print("The name you have entered is not the latest owner of this vehicle. Exiting.")
+		return
+
+	else: 
+		current_expiry = date.today()
+		cursor.execute("UPDATE registrations SET expiry = ? WHERE vin = ?", (current_expiry, entered_vin))
+		conn.commit()
+		new_registration_date = date.today()
+		new_expiry_date = current_expiry.replace(current_expiry.year + 1)
+		unique_registration_number = generateUniqueID() #Need to make this a UNIQUE number
+		new_owner_data = (unique_registration_number, new_registration_date, new_expiry_date, entered_plate, entered_vin, new_owner_fname, new_owner_lname)
+		cursor.execute("INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?,?,?,?,?,?,?)", new_owner_data)
+		conn.commit()
+
+
+
+
+
+def process_payment(): #FINISHED, MODIFY FOR PYTHON 2
 	'''The user should be able to record a payment by entering a valid ticket number and an amount. 
 	The payment date is automatically set to the day of the payment (today's date). 
 	A ticket can be paid in multiple payments but the sum of those payments cannot exceed the fine amount of the ticket.'''
-    ticketnumber = input("Enter the ticket number: ")
-    paymentamount = input("Enter the payment amount: ")
-    paymentdate = date.strftime("%Y-%m-%d")
+	ticketnumber = input("Enter the ticket number: ")
+	paymentamount = input("Enter the payment amount: ")
+	paymentdate = date.today()
 
-    cursor.execute("SELECT fine FROM tickets WHERE ? = tno", (ticketnumber))
-    fine_amount = cursor.fetchall()
-    if paymentamount > fine_amount:
-    	paymentamount = fine_amount
-    	print("You have overpaid this ticket. The true amount paid was $" + str(paymentamount))
-    	fine_amount = fine_amount - paymentamount
-    	cursor.execute("UPDATE tickets SET ? = fine WHERE ? = tno", (fine_amount, ticketnumber))
-    	conn.commit()
-    else:
-    	fine_amount = fine_amount - paymentamount
-    	print("Ticket paid for $" + str(paymentamount))
-    	cursor.execute("UPDATE tickets SET ? = fine WHERE ? = tno", (fine_amount, ticketnumber))
-    	conn.commit()
+	cursor.execute("SELECT fine FROM tickets WHERE ? = tno", (ticketnumber,))
+	fine_amount = cursor.fetchall()
+	fine_amount = str(fine_amount)
+	#fine_amount = fine_amount.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
+	fine_amount = fine_amount.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
 
-    payment_data = (ticketnumber, paymentdate, paymentamount)
-    cursor.execute("INSERT INTO payments(tno, pdate, amount) VALUES (?,?,?)", payment_data)
-    conn.commit()
+	fine_amount = float(fine_amount)
+
+	paymentamount = float(paymentamount)
+
+	cursor.execute("SELECT pdate FROM payments WHERE ? = tno", (ticketnumber,))
+	fine_date = cursor.fetchall()
+	if fine_date != []:
+		fine_date_string = str(fine_date)
+		#fine_date_string = fine_date_string.translate(None, '[(,)]') #This DOESNT work in python 3, but DOES in python 2
+		fine_date_string = fine_date_string.translate({ord(i):None for i in '[(,)]'}) #This DOESNT work in python 2, but DOES in python 3
+		fine_date_object = datetime.strptime(fine_date_string, "'%Y-%m-%d'").date()
+		if fine_date_object == date.today():
+			print("This ticket has already been paid today. Try again tomorrow!")
+			return
+
+	else:
+		if paymentamount > fine_amount:
+			paymentamount = fine_amount
+			print("You have overpaid this ticket. The true amount paid was $" + str(paymentamount))
+			fine_amount = fine_amount - paymentamount
+			cursor.execute("UPDATE tickets SET fine = ? WHERE tno = ?", (fine_amount, ticketnumber))
+			conn.commit()
+		else:
+			fine_amount = fine_amount - paymentamount
+			print("Ticket paid for $" + str(paymentamount))
+			cursor.execute("UPDATE tickets SET fine = ? WHERE tno = ?", (fine_amount, ticketnumber))
+			conn.commit()
+		payment_data = (ticketnumber, paymentdate, paymentamount)
+		cursor.execute("INSERT INTO payments(tno, pdate, amount) VALUES (?,?,?)", payment_data)
+		conn.commit()
+
+	
+
+	
+	
 
 
-def get_driver_abstract(): #No idea if this works or not. The last constraint about 5 or more tickets definitely is not implemented yet. Need to test how the for loop is going to work for fetching all the columns. Maybe abstract_info[i] in the loop?
+
+def get_driver_abstract(): #NEED TO ADJUST FOR PYTHON 2
 	#The user should be able to enter a first name and a last name and get a driver abstract, which includes number of tickets, the number of demerit notices, the total number of demerit points received both within the past two years and within the lifetime. 
 	#The user should be given the option to see the tickets ordered from the latest to the oldest. For each ticket, you will report the ticket number, 
 	#the violation date, the violation description, the fine, the registration number and the make and model of the car for which the ticket is issued. 
 	#If there are more than 5 tickets, at most 5 tickets will be shown at a time, and the user can select to see more.
-    abstract_fname = input("What is the driver's first name?: ")
-    abstract_lname = input("What is the driver's last name?: ")
-    cursor.execute("SELECT regno FROM registrations WHERE ? = fname AND ? = lname", (abstract_fname, abstract_lname))
-    abstract_regno = cursor.fetchall()
+	abstract_fname = input("What is the driver's first name?: ")
+	abstract_lname = input("What is the driver's last name?: ")
+	cursor.execute("SELECT regno FROM registrations WHERE ? = fname AND ? = lname", (abstract_fname, abstract_lname))
+	abstract_regno = cursor.fetchall()
 
-    cursor.execute("SELECT COUNT(*) FROM tickets WHERE ? = regno", (abstract_regno))
-    number_of_tickets = cursor.fetchall()
+	if len(abstract_regno) > 1:
+		abstract_regno_string = str(abstract_regno)
+		#abstract_regno_string = abstract_regno_string.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
+		abstract_regno_string = abstract_regno_string.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
+		abstract_regno_list = abstract_regno_string.split()
+		print("Driver Abstract: ")
+		length_of_list = range(len(abstract_regno_list))
 
-    cursor.execute("SELECT COUNT(*) FROM demeritNotices WHERE ? = fname AND ? = lname", (abstract_fname, abstract_lname))
-    number_of_demeritNotices = cursor.fetchall()
+		number_of_tickets_counter = 0
+		for i in length_of_list:
+			cursor.execute("SELECT COUNT(*) FROM tickets WHERE ? = regno", (abstract_regno_list[i],))
+			number_of_tickets = cursor.fetchall()
+			number_of_tickets_string = str(number_of_tickets)
+			#number_of_tickets_string = number_of_tickets_string.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
+			number_of_tickets_string = number_of_tickets_string.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
+			number_of_tickets_int = int(number_of_tickets_string)
+			number_of_tickets_counter += number_of_tickets_int
+		number_of_tickets_string = str(number_of_tickets_counter)
+		print("Number of tickets received: " + number_of_tickets_string)
 
-    cursor.execute("SELECT SUM(points) FROM demeritNotices WHERE ? = fname AND ? = lname AND ddate >= date('now', '-2 years')", (abstract_fname, abstract_lname))
-    recent_number_demerits = cursor.fetchall()
+		cursor.execute("SELECT COUNT(*) FROM demeritNotices WHERE ? LIKE fname AND ? LIKE lname", (abstract_fname, abstract_lname))
+		number_of_demeritNotices = cursor.fetchall()
+		number_of_demeritNotices_string = str(number_of_demeritNotices)
+		#number_of_demeritNotices_string = number_of_demeritNotices_string.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
+		number_of_demeritNotices_string = number_of_demeritNotices_string.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
+		print("Number of demerit notices received: " + number_of_demeritNotices_string)
 
-    cursor.execute("SELECT SUM(points) FROM demeritNotices WHERE ? = fname AND ? = lname", (abstract_fname, abstract_lname))
-    total_number_demerits = cursor.fetchall()
+		cursor.execute("SELECT SUM(points) FROM demeritNotices WHERE ? LIKE fname AND ? LIKE lname AND ddate >= date('now', '-2 years')", (abstract_fname, abstract_lname))
+		recent_number_demerits = cursor.fetchall()
+		recent_number_demerits_string = str(recent_number_demerits)
+		#recent_number_demerits_string = recent_number_demerits_string.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
+		recent_number_demerits_string = recent_number_demerits_string.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
+		print("Number of demerits within the last two years received: " + recent_number_demerits_string)
 
-    optional_order = input("Would you like to see the tickets in order of latest to oldest? (Y/N): ")
+		cursor.execute("SELECT SUM(points) FROM demeritNotices WHERE ? LIKE fname AND ? LIKE lname", (abstract_fname, abstract_lname))
+		total_number_demerits = cursor.fetchall()
+		total_number_demerits_string = str(total_number_demerits)
+		#total_number_demerits_string = total_number_demerits_string.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
+		total_number_demerits_string = total_number_demerits_string.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
+		print("Number of lifetime demerits received: " + total_number_demerits_string)
 
-    while (optional_order.lower() != "y") OR (optional_order.lower() != "n"):
-    	optional_order = input("Incorrect response. Would you like to see the tickets in order of latest to oldest? (Y/N): ")
-    	break
+		optional_order = input("Would you like to see the tickets in order of latest to oldest? (Y/N): ")
+		optional_order = optional_order.lower()
 
-    if optional_order.lower() == "y":
-    	for i in abstract_regno:  #not sure how this will work
-			cursor.execute("SELECT t.tno, t.vdate, t.violation, t.fine, t.regno, v.make, v.model FROM tickets t LEFT OUTER JOIN registrations r ON r.regno = t.regno LEFT OUTER JOIN vehicles v on v.vin = r.vin WHERE ? = t.regno ORDER BY t.vdate DESC", (abstract_regno[i]))
+		while (optional_order != "y") and (optional_order != "n"):
+			optional_order = input("Incorrect response. Would you like to see the tickets in order of latest to oldest? (Y/N): ")
+			break
+
+		ticket_counter = 0
+		for i in length_of_list:
+			if optional_order == "y":
+				cursor.execute("SELECT t.tno, t.vdate, t.violation, t.fine, t.regno, v.make, v.model FROM tickets t LEFT OUTER JOIN registrations r ON r.regno = t.regno LEFT OUTER JOIN vehicles v on v.vin = r.vin WHERE ? = t.regno ORDER BY t.vdate DESC", (abstract_regno_list[i],))
+				abstract_info = cursor.fetchall() #might need to move this out of the for loop
+				for row in abstract_info:
+					print(row)
+					ticket_counter += 1
+					if ticket_counter == 5 and number_of_tickets_counter > 5:
+						choice_of_five = input("Five tickets have been displayed, would you like to see more? (Y/N): ")
+						if choice_of_five.lower() == "y":
+							continue
+						else:
+							return
+
+
+			elif optional_order == "n":
+				cursor.execute("SELECT t.tno, t.vdate, t.violation, t.fine, t.regno, v.make, v.model FROM tickets t LEFT OUTER JOIN registrations r ON r.regno = t.regno LEFT OUTER JOIN vehicles v on v.vin = r.vin WHERE ? = t.regno", (abstract_regno_list[i],))
+				abstract_info = cursor.fetchall() #might need to move this out of the for loop
+				for row in abstract_info:
+					print(row)
+					ticket_counter += 1
+					if ticket_counter == 5 and number_of_tickets_counter > 5:
+						choice_of_five = input("Five tickets have been displayed, would you like to see more? (Y/N): ")
+						if choice_of_five.lower() == "y":
+							continue
+						else:
+							return
+
+	else:
+		abstract_regno_string = str(abstract_regno)
+		#abstract_regno_string = abstract_regno_string.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
+		abstract_regno_string = abstract_regno_string.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
+		print(abstract_regno_string)
+		print("Driver Abstract: ")
+
+	
+		cursor.execute("SELECT COUNT(*) FROM tickets WHERE ? = regno", (abstract_regno_string,))
+		number_of_tickets = cursor.fetchall()
+		number_of_tickets_string = str(number_of_tickets)
+		#number_of_tickets_string = number_of_tickets_string.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
+		number_of_tickets_string = number_of_tickets_string.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
+		print("Number of tickets received: " + number_of_tickets_string)
+
+		cursor.execute("SELECT COUNT(*) FROM demeritNotices WHERE ? LIKE fname AND ? LIKE lname", (abstract_fname, abstract_lname))
+		number_of_demeritNotices = cursor.fetchall()
+		number_of_demeritNotices_string = str(number_of_demeritNotices)
+		#number_of_demeritNotices_string = number_of_demeritNotices_string.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
+		number_of_demeritNotices_string = number_of_demeritNotices_string.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
+		print("Number of demerit notices received: " + number_of_demeritNotices_string)
+
+		cursor.execute("SELECT SUM(points) FROM demeritNotices WHERE ? LIKE fname AND ? LIKE lname AND ddate >= date('now', '-2 years')", (abstract_fname, abstract_lname))
+		recent_number_demerits = cursor.fetchall()
+		recent_number_demerits_string = str(recent_number_demerits)
+		#recent_number_demerits_string = recent_number_demerits_string.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
+		recent_number_demerits_string = recent_number_demerits_string.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
+		print("Number of demerits within the last two years received: " + recent_number_demerits_string)
+
+		cursor.execute("SELECT SUM(points) FROM demeritNotices WHERE ? LIKE fname AND ? LIKE lname", (abstract_fname, abstract_lname))
+		total_number_demerits = cursor.fetchall()
+		total_number_demerits_string = str(total_number_demerits)
+		#total_number_demerits_string = total_number_demerits_string.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
+		total_number_demerits_string = total_number_demerits_string.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
+		print("Number of lifetime demerits received: " + total_number_demerits_string)
+
+		optional_order = input("Would you like to see the tickets in order of latest to oldest? (Y/N): ")
+		optional_order = optional_order.lower()
+
+		while (optional_order != "y") and (optional_order != "n"):
+			optional_order = input("Incorrect response. Would you like to see the tickets in order of latest to oldest? (Y/N): ")
+			break
+
+		if optional_order == "y":
+			cursor.execute("SELECT t.tno, t.vdate, t.violation, t.fine, t.regno, v.make, v.model FROM tickets t LEFT OUTER JOIN registrations r ON r.regno = t.regno LEFT OUTER JOIN vehicles v on v.vin = r.vin WHERE ? = t.regno ORDER BY t.vdate DESC", (abstract_regno_string,))
 			abstract_info = cursor.fetchall() #might need to move this out of the for loop
-			print(abstract_info)
+			for row in abstract_info:
+				print(row)
 
-    elif optional_order.lower() == "n":
-    	for i in abstract_regno:  #not sure how this will work
-			cursor.execute("SELECT t.tno, t.vdate, t.violation, t.fine, t.regno, v.make, v.model FROM tickets t LEFT OUTER JOIN registrations r ON r.regno = t.regno LEFT OUTER JOIN vehicles v on v.vin = r.vin WHERE ? = t.regno", (abstract_regno[i]))
+		elif optional_order == "n":
+			cursor.execute("SELECT t.tno, t.vdate, t.violation, t.fine, t.regno, v.make, v.model FROM tickets t LEFT OUTER JOIN registrations r ON r.regno = t.regno LEFT OUTER JOIN vehicles v on v.vin = r.vin WHERE ? = t.regno", (abstract_regno_string,))
 			abstract_info = cursor.fetchall() #might need to move this out of the for loop
-			print(abstract_info)
-
+			for row in abstract_info:
+				print(row)
 
 
 
 
 
 def logout():
-    pass
+	pass
 
 def issue_ticket():
-    pass
+	pass
 
 def find_car_owner():
-    pass
+	pass
 
 
 main()

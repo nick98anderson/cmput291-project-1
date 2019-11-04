@@ -357,11 +357,11 @@ def process_bill_of_sale(): #NEED TO CONTROL FOR EXISTING LICENSE PLATE NO. IF H
 		while True:
 			cursor.execute("SELECT EXISTS(SELECT 1 FROM registrations WHERE regno=?)", (unique_registration_number,))
 			temp = cursor.fetchall()
+			conn.commit()
 			if int(temp[0][0]) == 1:
 				unique_registration_number = randrange(1000000000)
 			else:
-			conn.commit()
-			break
+				break
 		new_owner_data = (unique_registration_number, new_registration_date, new_expiry_date, entered_plate, entered_vin, new_owner_fname, new_owner_lname)
 		cursor.execute("INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?,?,?,?,?,?,?)", new_owner_data)
 		conn.commit()

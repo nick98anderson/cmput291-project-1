@@ -356,6 +356,9 @@ def process_payment(): #FINISHED, MODIFY FOR PYTHON 2
 
 	cursor.execute("SELECT fine FROM tickets WHERE ? = tno", (ticketnumber,))
 	fine_amount = cursor.fetchall()
+	if fine_amount == []:
+           print("This ticket doesn't exist. Returning to agent operations.")
+       	   return
 	fine_amount = str(fine_amount)
 	#fine_amount = fine_amount.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
 	fine_amount = fine_amount.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3

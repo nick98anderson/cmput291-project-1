@@ -646,7 +646,7 @@ def find_car_owner():
             if i == 1:
                 print("    "+formated_row.format("Make", "Model", "Year", "Color", "Plate"))
             
-            print(str(i)+ "   " + formated_row.format(row[0], row[1], row[2], row[3], row[4]))
+            print(str(i)+ "   " + formated_row.format(str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4]))
             i = i + 1
 
         selectionRow = int(input("Select row from vehicles for more information: "))

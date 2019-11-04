@@ -49,8 +49,8 @@ def login():
 
 
 def getUser():
-    username = input("User ID: ")
-    pwd = input("Password: ")
+    username = raw_input("User ID: ")
+    pwd = raw_input("Password: ")
     cursor.execute("SELECT utype, city FROM users WHERE uid LIKE ? AND pwd = ?", (username, pwd))
     user = cursor.fetchall()
     return user
@@ -543,7 +543,7 @@ def issue_ticket():
         conn.commit()
 
         if regInfo == []:
-            option = input('Registration number not found would you like to try again? (y/n): ')
+            option = raw_input('Registration number not found would you like to try again? (y/n): ')
             if option == 'n':
                 return 
         elif regInfo[0][0] == regno:
@@ -571,7 +571,7 @@ def issue_ticket():
     while True:
         vDate = input('Enter violation date (YYYY-MM-DD)')
         vText = input('Enter violation text: ')
-        fineAmount = input(('Enter fine amount: '))
+        fineAmount = raw_input(('Enter fine amount: '))
 
         if fineAmount.isdigit() == False:
             print('ERROR, Invalid fine value entered please try again')
@@ -608,7 +608,7 @@ def find_car_owner():
     userValues = []
 
     for i in range(0, len(carDetails)):
-        temp = input("Enter "+carDetails[i] + " (Optional): ")
+        temp = raw_input("Enter "+carDetails[i] + " (Optional): ")
         if temp != '':
             userValues.append(temp)
             userSelections.append(carDetails[i])

@@ -375,21 +375,21 @@ def process_payment(): #FINISHED, MODIFY FOR PYTHON 2
 			print("This ticket has already been paid today. Try again tomorrow!")
 			return
 
-	else:
-		if paymentamount > fine_amount:
-			paymentamount = fine_amount
-			print("You have overpaid this ticket. The true amount paid was $" + str(paymentamount))
-			fine_amount = fine_amount - paymentamount
-			cursor.execute("UPDATE tickets SET fine = ? WHERE tno = ?", (fine_amount, ticketnumber))
-			conn.commit()
-		else:
-			fine_amount = fine_amount - paymentamount
-			print("Ticket paid for $" + str(paymentamount))
-			cursor.execute("UPDATE tickets SET fine = ? WHERE tno = ?", (fine_amount, ticketnumber))
-			conn.commit()
-		payment_data = (ticketnumber, paymentdate, paymentamount)
-		cursor.execute("INSERT INTO payments(tno, pdate, amount) VALUES (?,?,?)", payment_data)
+	
+	if paymentamount > fine_amount:
+		paymentamount = fine_amount
+		print("You have overpaid this ticket. The true amount paid was $" + str(paymentamount))
+		fine_amount = fine_amount - paymentamount
+		cursor.execute("UPDATE tickets SET fine = ? WHERE tno = ?", (fine_amount, ticketnumber))
 		conn.commit()
+	else:
+		fine_amount = fine_amount - paymentamount
+		print("Ticket paid for $" + str(paymentamount))
+		cursor.execute("UPDATE tickets SET fine = ? WHERE tno = ?", (fine_amount, ticketnumber))
+		conn.commit()
+	payment_data = (ticketnumber, paymentdate, paymentamount)
+	cursor.execute("INSERT INTO payments(tno, pdate, amount) VALUES (?,?,?)", payment_data)
+	conn.commit()
 	
 
 

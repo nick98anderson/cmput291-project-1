@@ -326,6 +326,11 @@ def process_bill_of_sale(): #NEED TO CONTROL FOR EXISTING LICENSE PLATE NO. IF H
 	else: 
 		new_owner_fname = input("What is the first name of the new owner?: ")
 		new_owner_lname = input("What is the last name of the new owner?: ")
+		cursor.execute("SELECT fname, lname FROM persons WHERE ? LIKE fname AND ? LIKE lname", (new_owner_fname, new_owner_lname))
+		new_owner = cursor.fetchall()
+		if new_owner == []:
+			print("The new owner of this vehicle does not exist in the database. Transaction incomplete. Returning.")
+			return
 		entered_plate = input("What is the requested new license plate number?: ")
 		current_expiry = date.today()
 		cursor.execute("UPDATE registrations SET expiry = ? WHERE vin = ?", (current_expiry, entered_vin))

@@ -19,9 +19,6 @@ cursor = conn.cursor()
 cursor.execute('PRAGMA foreign_keys=ON;')   
 conn.commit()
 
-def single_quote(word):
-    return "'%s'" % word
-
 def main():
     print("***WELCOME****")
     user = login()
@@ -143,7 +140,15 @@ def register_birth(user): #needs nbregplace and new unique id generator
 	as well as the first and last names of the parents. The registration date is set to the day of registration (today's date) and the registration place is set to the city of the user. 
 	The system should automatically assign a unique registration number to the birth record. The address and the phone of the newborn are set to those of the mother. If any of the parents is not in the database, 
 	the system should get information about the parent including first name, last name, birth date, birth place, address and phone. For each parent, any column other than the first name and last name can be null if it is not provided.'''
-	birthregno = generateUniqueID()
+	birthregno = randrange(1000000000)
+	while True:
+	    cursor.execute("SELECT EXISTS(SELECT 1 FROM births WHERE regno=?)", (birthregno,))
+	    temp = cursor.fetchall()
+	    if int(temp[0][0]) == 1:
+	        birthregno = randrange(1000000000)
+	    else:
+	        conn.commit()
+		break
 	nbfname = input("Newborn's First Name: ")
 	nblname = input("Newborn's Last Name: ")
 	cursor.execute("SELECT fname, lname FROM persons WHERE ? LIKE fname AND ? LIKE lname", (nbfname, nblname))
@@ -171,7 +176,7 @@ def register_birth(user): #needs nbregplace and new unique id generator
 		motherbplace = input("What is the Mother's birth place? (format): ")
 		motheraddress = input("What is the Mother's address? (format): ")
 		motherphone = input("What is the Mother's phone number?: (###-###-####)")
-		mother_data = (motherfname,motherlname,motherbdate,motherbplace,motheraddress,motherphone)
+		mother_data = (nbm_fname,nbm_lname,motherbdate,motherbplace,motheraddress,motherphone)
 		cursor.execute("INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)", mother_data)
 		conn.commit()
 		break
@@ -183,7 +188,7 @@ def register_birth(user): #needs nbregplace and new unique id generator
 		fatherbplace = input("What is the Father's birth place?: ")
 		fatheraddress = input("What is the Father's address?: ")
 		fatherphone = input("What is the Father's phone number? (###-###-####): ")
-		father_data = (fatherfname,fatherlname,fatherbdate,fatherbplace,fatheraddress,fatherphone)
+		father_data = (nbf_fname,nbf_lname,fatherbdate,fatherbplace,fatheraddress,fatherphone)
 		cursor.execute("INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)", father_data)
 		conn.commit()
 		break
@@ -208,7 +213,15 @@ def register_marriage(user): #only thing needed is regplace and new uniqueID gen
 	'''The user should be able to provide the names of the partners and the system should assign the registration date and place and a unique registration number as discussed in registering a birth. 
 	If any of the partners is not found in the database, the system should get information about the partner including first name, last name, birth date, birth place, address and phone. 
 	For each partner, any column other than the first name and last name can be null if it is not provided.'''
-	marriageno = generateUniqueID() #Need to make this a UNIQUE number
+	marriageno = randrange(1000000000)
+	while True:
+	    cursor.execute("SELECT EXISTS(SELECT 1 FROM marriages WHERE regno=?)", (marriageno,))
+	    temp = cursor.fetchall()
+	    if int(temp[0][0]) == 1:
+                marriageno = randrange(1000000000)
+	    else:
+                conn.commit()
+		break
 	marriagedate = date.today() #Could use SQL datetime instead, not sure how this will convert
 	#marriageplace = input("Where is the couple getting married?: ") #THIS needs to be the user's city again
 	marriageplace = str(user)
@@ -340,7 +353,15 @@ def process_bill_of_sale(): #NEED TO CONTROL FOR EXISTING LICENSE PLATE NO. IF H
 		conn.commit()
 		new_registration_date = date.today()
 		new_expiry_date = current_expiry.replace(current_expiry.year + 1)
-		unique_registration_number = generateUniqueID() #Need to make this a UNIQUE number
+		unique_registration_number = randrange(1000000000)
+		while True:
+		    cursor.execute("SELECT EXISTS(SELECT 1 FROM registrations WHERE regno=?)", (unique_registration_number,))
+		    temp = cursor.fetchall()
+		    if int(temp[0][0]) == 1:
+		        unique_registration_number = randrange(1000000000)
+		    else:
+			conn.commit()
+			break
 		new_owner_data = (unique_registration_number, new_registration_date, new_expiry_date, entered_plate, entered_vin, new_owner_fname, new_owner_lname)
 		cursor.execute("INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?,?,?,?,?,?,?)", new_owner_data)
 		conn.commit()
@@ -708,6 +729,9 @@ def find_car_owner():
 
     conn.commit()
 
+
+def single_quote(word):
+    return "'%s'" % word
 
 main()
 

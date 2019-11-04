@@ -20,40 +20,40 @@ cursor.execute('PRAGMA foreign_keys=ON;')
 conn.commit()
 
 def main():
-    print("***WELCOME****")
-    user = login()
-    
+	print("***WELCOME****")
+	user = login()
+	
 
-    if user[0][0] == 'a':
-        agent_prompt(str(user[0][1]))
+	if user[0][0] == 'a':
+		agent_prompt(str(user[0][1]))
 
-    elif user[0][0] == 'o':
-        officer_prompt()
-    else:
-        print(user[0][0])
-        print("error")
+	elif user[0][0] == 'o':
+		officer_prompt()
+	else:
+		print(user[0][0])
+		print("error")
 
 
 def login():
-    isUser = False
-    while isUser == False:
-        user = getUser()
-        if len(user) != 0:
-            isUser = True
-        else:
-            print("Invalid user id or password, please try again")
-    return user 
+	isUser = False
+	while isUser == False:
+		user = getUser()
+		if len(user) != 0:
+			isUser = True
+		else:
+			print("Invalid user id or password, please try again")
+	return user 
 
 def logout():
-    print("LOGGING OUT...")
-    main()
+	print("LOGGING OUT...")
+	main()
 
 def getUser():
-    username = input("User ID: ")
-    pwd = input("Password: ")
-    cursor.execute("SELECT utype, city FROM users WHERE uid LIKE ? AND pwd = ?", (username, pwd))
-    user = cursor.fetchall()
-    return user
+	username = input("User ID: ")
+	pwd = input("Password: ")
+	cursor.execute("SELECT utype, city FROM users WHERE uid LIKE ? AND pwd = ?", (username, pwd))
+	user = cursor.fetchall()
+	return user
 
 def generateUniqueID():
 	existing_IDs = []
@@ -65,56 +65,56 @@ def generateUniqueID():
 	return random_number
 
 def officer_prompt():
-    display_officer_options()
+	display_officer_options()
 
-    while True:
-        input_option = input("Select option: ")
-        option = int(input_option)
+	while True:
+		input_option = input("Select option: ")
+		option = int(input_option)
 
-        if option == 0:
-            issue_ticket()
-            display_officer_options()
-        elif option == 1:
-            find_car_owner()
-            display_officer_options()
-        elif option == 2:
-            logout()
-        else:
-            print("****ERROR***** invalid option please try again")
-            display_officer_options()
+		if option == 0:
+			issue_ticket()
+			display_officer_options()
+		elif option == 1:
+			find_car_owner()
+			display_officer_options()
+		elif option == 2:
+			logout()
+		else:
+			print("****ERROR***** invalid option please try again")
+			display_officer_options()
 
 
 def agent_prompt(user):
 
-    display_agent_options()
+	display_agent_options()
 
-    while True:
-        input_option = input("Selection option: ")
-        option = int(input_option)
+	while True:
+		input_option = input("Selection option: ")
+		option = int(input_option)
 
-        if option == 0:
-            register_birth(user)
-            display_agent_options()
-        elif option == 1:
-            register_marriage(user)
-            display_agent_options()
-        elif option == 2:
-            renew_vehicle_Reg()
-            display_agent_options()
-        elif option == 3:
-            process_bill_of_sale()
-            display_agent_options()
-        elif option == 4:
-            process_payment()
-            display_agent_options()
-        elif option == 5:
-            get_driver_abstract()
-            display_agent_options()
-        elif option == 6:
-            logout()
-        else:
-            print("****ERROR***** invalid option please try again")
-            display_agent_options()
+		if option == 0:
+			register_birth(user)
+			display_agent_options()
+		elif option == 1:
+			register_marriage(user)
+			display_agent_options()
+		elif option == 2:
+			renew_vehicle_Reg()
+			display_agent_options()
+		elif option == 3:
+			process_bill_of_sale()
+			display_agent_options()
+		elif option == 4:
+			process_payment()
+			display_agent_options()
+		elif option == 5:
+			get_driver_abstract()
+			display_agent_options()
+		elif option == 6:
+			logout()
+		else:
+			print("****ERROR***** invalid option please try again")
+			display_agent_options()
 
 			
 def display_agent_options():
@@ -142,12 +142,12 @@ def register_birth(user): #needs nbregplace and new unique id generator
 	the system should get information about the parent including first name, last name, birth date, birth place, address and phone. For each parent, any column other than the first name and last name can be null if it is not provided.'''
 	birthregno = randrange(1000000000)
 	while True:
-	    cursor.execute("SELECT EXISTS(SELECT 1 FROM births WHERE regno=?)", (birthregno,))
-	    temp = cursor.fetchall()
-	    if int(temp[0][0]) == 1:
-	        birthregno = randrange(1000000000)
-	    else:
-	        conn.commit()
+		cursor.execute("SELECT EXISTS(SELECT 1 FROM births WHERE regno=?)", (birthregno,))
+		temp = cursor.fetchall()
+		if int(temp[0][0]) == 1:
+			birthregno = randrange(1000000000)
+		else:
+			conn.commit()
 		break
 	nbfname = input("Newborn's First Name: ")
 	nblname = input("Newborn's Last Name: ")
@@ -215,12 +215,12 @@ def register_marriage(user): #only thing needed is regplace and new uniqueID gen
 	For each partner, any column other than the first name and last name can be null if it is not provided.'''
 	marriageno = randrange(1000000000)
 	while True:
-	    cursor.execute("SELECT EXISTS(SELECT 1 FROM marriages WHERE regno=?)", (marriageno,))
-	    temp = cursor.fetchall()
-	    if int(temp[0][0]) == 1:
-                marriageno = randrange(1000000000)
-	    else:
-                conn.commit()
+		cursor.execute("SELECT EXISTS(SELECT 1 FROM marriages WHERE regno=?)", (marriageno,))
+		temp = cursor.fetchall()
+		if int(temp[0][0]) == 1:
+				marriageno = randrange(1000000000)
+		else:
+				conn.commit()
 		break
 	marriagedate = date.today() #Could use SQL datetime instead, not sure how this will convert
 	#marriageplace = input("Where is the couple getting married?: ") #THIS needs to be the user's city again
@@ -355,11 +355,11 @@ def process_bill_of_sale(): #NEED TO CONTROL FOR EXISTING LICENSE PLATE NO. IF H
 		new_expiry_date = current_expiry.replace(current_expiry.year + 1)
 		unique_registration_number = randrange(1000000000)
 		while True:
-		    cursor.execute("SELECT EXISTS(SELECT 1 FROM registrations WHERE regno=?)", (unique_registration_number,))
-		    temp = cursor.fetchall()
-		    if int(temp[0][0]) == 1:
-		        unique_registration_number = randrange(1000000000)
-		    else:
+			cursor.execute("SELECT EXISTS(SELECT 1 FROM registrations WHERE regno=?)", (unique_registration_number,))
+			temp = cursor.fetchall()
+			if int(temp[0][0]) == 1:
+				unique_registration_number = randrange(1000000000)
+			else:
 			conn.commit()
 			break
 		new_owner_data = (unique_registration_number, new_registration_date, new_expiry_date, entered_plate, entered_vin, new_owner_fname, new_owner_lname)
@@ -381,8 +381,8 @@ def process_payment(): #FINISHED, MODIFY FOR PYTHON 2
 	cursor.execute("SELECT fine FROM tickets WHERE ? = tno", (ticketnumber,))
 	fine_amount = cursor.fetchall()
 	if fine_amount == []:
-           print("This ticket doesn't exist. Returning to agent operations.")
-       	   return
+		   print("This ticket doesn't exist. Returning to agent operations.")
+		   return
 	fine_amount = str(fine_amount)
 	#fine_amount = fine_amount.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
 	fine_amount = fine_amount.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
@@ -566,172 +566,172 @@ def get_driver_abstract(): #NEED TO ADJUST FOR PYTHON 2
 				print(row)
 
 def logout():
-    print("Logging out....")
-    main()
+	print("Logging out....")
+	main()
 
 
 
 def issue_ticket():
-    
-    while True:
-        regno = int(input("Enter a registration number: "))
-        cursor.execute("SELECT regno, vin, fname, lname FROM registrations WHERE regno = ?;", (regno,))
-        regInfo = cursor.fetchall()
-        conn.commit()
+	
+	while True:
+		regno = int(input("Enter a registration number: "))
+		cursor.execute("SELECT regno, vin, fname, lname FROM registrations WHERE regno = ?;", (regno,))
+		regInfo = cursor.fetchall()
+		conn.commit()
 
-        if regInfo == []:
-            option = input('Registration number not found would you like to try again? (y/n): ')
-            if option == 'n':
-                return 
-        elif regInfo[0][0] == regno:
-            break
-    
-    vin = regInfo[0][1]
-    fname = regInfo[0][2]
-    lname = regInfo[0][3]
+		if regInfo == []:
+			option = input('Registration number not found would you like to try again? (y/n): ')
+			if option == 'n':
+				return 
+		elif regInfo[0][0] == regno:
+			break
+	
+	vin = regInfo[0][1]
+	fname = regInfo[0][2]
+	lname = regInfo[0][3]
 
-    cursor.execute("SELECT make, model, year, color FROM vehicles WHERE vin = ?;",(vin,))
-    vehicleInfo = cursor.fetchall()
-    conn.commit()
+	cursor.execute("SELECT make, model, year, color FROM vehicles WHERE vin = ?;",(vin,))
+	vehicleInfo = cursor.fetchall()
+	conn.commit()
 
-    make = vehicleInfo[0][0]
-    model = vehicleInfo[0][1]
-    year = vehicleInfo[0][2]
-    color = vehicleInfo[0][3]
-    
-    print("\n***Vehicle Info***")
-    print("Make: " + str(make))
-    print("Model: " + str(model))
-    print("Year: " + str(year))
-    print("Color: " + str(color))
+	make = vehicleInfo[0][0]
+	model = vehicleInfo[0][1]
+	year = vehicleInfo[0][2]
+	color = vehicleInfo[0][3]
+	
+	print("\n***Vehicle Info***")
+	print("Make: " + str(make))
+	print("Model: " + str(model))
+	print("Year: " + str(year))
+	print("Color: " + str(color))
 
-    while True:
-        vDate = input('Enter violation date (YYYY-MM-DD)')
-        vText = input('Enter violation text: ')
-        fineAmount = input(('Enter fine amount: '))
+	while True:
+		vDate = input('Enter violation date (YYYY-MM-DD)')
+		vText = input('Enter violation text: ')
+		fineAmount = input(('Enter fine amount: '))
 
-        if fineAmount.isdigit() == False:
-            print('ERROR, Invalid fine value entered please try again')
-        
-        if vDate == '':
-            vDate = datetime.datetime.now().strftime("%Y-%m-%d")
+		if fineAmount.isdigit() == False:
+			print('ERROR, Invalid fine value entered please try again')
+		
+		if vDate == '':
+			vDate = datetime.datetime.now().strftime("%Y-%m-%d")
 
-        if vText == '':
-            vText = None
+		if vText == '':
+			vText = None
 
-        else:
-            break
-    
-    tno = randrange(1000000000)
+		else:
+			break
+	
+	tno = randrange(1000000000)
 
-    while True:
-        cursor.execute("SELECT EXISTS(SELECT 1 FROM tickets WHERE tno=?)", (tno,))
-        temp = cursor.fetchall()
-        if int(temp[0][0]) == 1:
-            tno = randrange(1000000000)
-        else:
-            conn.commit()
-            break
+	while True:
+		cursor.execute("SELECT EXISTS(SELECT 1 FROM tickets WHERE tno=?)", (tno,))
+		temp = cursor.fetchall()
+		if int(temp[0][0]) == 1:
+			tno = randrange(1000000000)
+		else:
+			conn.commit()
+			break
 
-    
-    cursor.execute("insert into tickets values(?,?,?,?,?)", (tno,regno,fineAmount,vText,vDate))
-    conn.commit()
+	
+	cursor.execute("insert into tickets values(?,?,?,?,?)", (tno,regno,fineAmount,vText,vDate))
+	conn.commit()
 
 
 def find_car_owner():
-    selectQuery = "SELECT v.make, v.model, v.year, v.color, r.plate, regdate, expiry, fname, lname FROM vehicles v LEFT JOIN registrations r ON r.vin = v.vin WHERE "
-    carDetails = ['make', 'model', 'year', 'color', 'plate']
-    userSelections = []
-    userValues = []
+	selectQuery = "SELECT v.make, v.model, v.year, v.color, r.plate, regdate, expiry, fname, lname FROM vehicles v LEFT JOIN registrations r ON r.vin = v.vin WHERE "
+	carDetails = ['make', 'model', 'year', 'color', 'plate']
+	userSelections = []
+	userValues = []
 
-    for i in range(0, len(carDetails)):
-        temp = input("Enter "+carDetails[i] + " (Optional): ")
-        if temp != '':
-            userValues.append(temp)
-            userSelections.append(carDetails[i])
+	for i in range(0, len(carDetails)):
+		temp = input("Enter "+carDetails[i] + " (Optional): ")
+		if temp != '':
+			userValues.append(temp)
+			userSelections.append(carDetails[i])
 
-    if len(userValues) == 0:
-        print("ERROR, you must enter at least one of the fields")
-        return
+	if len(userValues) == 0:
+		print("ERROR, you must enter at least one of the fields")
+		return
 
-    for i in range(0, len(userSelections)):
-        if i == len(userSelections) - 1:
-            if userSelections[i] == 'year':
-                selectQuery += 'v.'+ userSelections[i] + '=' + userValues[i]
-            elif userSelections[i] == 'plate':
-                selectQuery += 'r.'+userSelections[i] + '=' + single_quote(userValues[i])
-            else:
-                selectQuery += 'v.' + userSelections[i] + ' LIKE ' + single_quote(userValues[i])
-        else:
-            if userSelections[i] == 'year':
-                selectQuery += 'v.'+ userSelections[i] + '=' + userValues[i] + ' AND '
-            elif userSelections[i] == 'plate':
-                selectQuery += 'r.'+userSelections[i] + '=' + single_quote(userValues[i]) + ' AND '
-            else:
-                selectQuery += 'v.' + userSelections[i] + ' LIKE ' + single_quote(userValues[i]) + ' AND '
-    
-    selectQuery += " GROUP BY v.vin"
+	for i in range(0, len(userSelections)):
+		if i == len(userSelections) - 1:
+			if userSelections[i] == 'year':
+				selectQuery += 'v.'+ userSelections[i] + '=' + userValues[i]
+			elif userSelections[i] == 'plate':
+				selectQuery += 'r.'+userSelections[i] + '=' + single_quote(userValues[i])
+			else:
+				selectQuery += 'v.' + userSelections[i] + ' LIKE ' + single_quote(userValues[i])
+		else:
+			if userSelections[i] == 'year':
+				selectQuery += 'v.'+ userSelections[i] + '=' + userValues[i] + ' AND '
+			elif userSelections[i] == 'plate':
+				selectQuery += 'r.'+userSelections[i] + '=' + single_quote(userValues[i]) + ' AND '
+			else:
+				selectQuery += 'v.' + userSelections[i] + ' LIKE ' + single_quote(userValues[i]) + ' AND '
+	
+	selectQuery += " GROUP BY v.vin"
 
-    cursor.execute(selectQuery)
-    fetched = cursor.fetchall()
-
-
-    if len(fetched) == 0:
-        print('No results found')
-
-    elif len(fetched) >= 4:
-        formated_row = '{:<10} {:>6} {:>6} {:>6} {:^10}' 
-        i = 1
-        for row in fetched:
-            if i == 1:
-                print("    "+formated_row.format("Make", "Model", "Year", "Color", "Plate"))
-            
-            print(str(i)+ "   " + formated_row.format(str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4])))
-            i = i + 1
-
-        selectionRow = int(input("Select row from vehicles for more information: "))
-
-        while (selectionRow < 1) or (selectionRow > len(fetched)):
-            print("ERROR, invalid selection please try again")
-            selectionRow = int(input("Select row from vehicles for more information: "))
-        
-        selection = fetched[selectionRow-1]
-
-        make = str(selection[0])
-        model = str(selection[1])
-        year = str(selection[2])
-        color = str(selection[3])
-        plate = str(selection[4])
-        formated_row = '{:<10} {:^10} {:^10} {:^10} {:^10} {:^15} {:^15} {:^15} {:^15}'
-
-        if plate == "None":
-            print(formated_row.format("Make", "Model", "Year", "Color", "Plate","Regdate","Expiry Date","First name", "Last name"))
-            print(formated_row.format(make, model, year, color, plate, "None", "None", "None", "None"))
-
-        else:
-            selectQuery = """SELECT v.make, v.model, v.year, v.color, r.plate, r.regdate, r.expiry, r.fname, r.lname FROM vehicles v 
-            LEFT JOIN registrations r ON v.vin = r.vin WHERE v.make like ? AND v.model like ? AND v.year = ? AND v.color LIKE ? AND r.plate = ?
-            ORDER BY r.regdate DESC LIMIT 1"""
-            cursor.execute(selectQuery, (make, model, year, color, plate))
-            fetched = cursor.fetchall() 
-            print(formated_row.format("Make", "Model", "Year", "Color", "Plate","Regdate","Expiry Date","First name", "Last name"))
-            for row in fetched:
-                print(formated_row.format(*row))
-
-    else:
-        formated_row = '{:<10} {:^10} {:^10} {:^10} {:^10} {:^15} {:^15} {:^15} {:^15}'
-        selectQuery += "AND r.regdate = (SELECT MAX(regdate) FROM registrations WHERE vin = v.vin)"
-        print(selectQuery)
-        print(formated_row.format("Make", "Model", "Year", "Color", "Plate","Regdate","Expiry Date","First name", "Last name"))
-        for row in fetched:
-            print(formated_row.format(*row))
+	cursor.execute(selectQuery)
+	fetched = cursor.fetchall()
 
 
-    conn.commit()
+	if len(fetched) == 0:
+		print('No results found')
+
+	elif len(fetched) >= 4:
+		formated_row = '{:<10} {:>6} {:>6} {:>6} {:^10}' 
+		i = 1
+		for row in fetched:
+			if i == 1:
+				print("    "+formated_row.format("Make", "Model", "Year", "Color", "Plate"))
+			
+			print(str(i)+ "   " + formated_row.format(str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4])))
+			i = i + 1
+
+		selectionRow = int(input("Select row from vehicles for more information: "))
+
+		while (selectionRow < 1) or (selectionRow > len(fetched)):
+			print("ERROR, invalid selection please try again")
+			selectionRow = int(input("Select row from vehicles for more information: "))
+		
+		selection = fetched[selectionRow-1]
+
+		make = str(selection[0])
+		model = str(selection[1])
+		year = str(selection[2])
+		color = str(selection[3])
+		plate = str(selection[4])
+		formated_row = '{:<10} {:^10} {:^10} {:^10} {:^10} {:^15} {:^15} {:^15} {:^15}'
+
+		if plate == "None":
+			print(formated_row.format("Make", "Model", "Year", "Color", "Plate","Regdate","Expiry Date","First name", "Last name"))
+			print(formated_row.format(make, model, year, color, plate, "None", "None", "None", "None"))
+
+		else:
+			selectQuery = """SELECT v.make, v.model, v.year, v.color, r.plate, r.regdate, r.expiry, r.fname, r.lname FROM vehicles v 
+			LEFT JOIN registrations r ON v.vin = r.vin WHERE v.make like ? AND v.model like ? AND v.year = ? AND v.color LIKE ? AND r.plate = ?
+			ORDER BY r.regdate DESC LIMIT 1"""
+			cursor.execute(selectQuery, (make, model, year, color, plate))
+			fetched = cursor.fetchall() 
+			print(formated_row.format("Make", "Model", "Year", "Color", "Plate","Regdate","Expiry Date","First name", "Last name"))
+			for row in fetched:
+				print(formated_row.format(*row))
+
+	else:
+		formated_row = '{:<10} {:^10} {:^10} {:^10} {:^10} {:^15} {:^15} {:^15} {:^15}'
+		selectQuery += "AND r.regdate = (SELECT MAX(regdate) FROM registrations WHERE vin = v.vin)"
+		print(selectQuery)
+		print(formated_row.format("Make", "Model", "Year", "Color", "Plate","Regdate","Expiry Date","First name", "Last name"))
+		for row in fetched:
+			print(formated_row.format(*row))
+
+
+	conn.commit()
 
 
 def single_quote(word):
-    return "'%s'" % word
+	return "'%s'" % word
 
 main()
 

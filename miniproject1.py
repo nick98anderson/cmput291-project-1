@@ -10,9 +10,6 @@ https://github.com/imilas/291PyLab -- BEST
 https://eclass.srv.ualberta.ca/pluginfile.php/5149359/mod_label/intro/QL-eSQL.pdf?time=1567207038507 -- SQL inside applications slides
 https://stackoverflow.com/questions/973541/how-to-set-sqlite3-to-be-case-insensitive-when-string-comparing -- Case sensitive for SQL'''
 
-
-#CASE SENSITIVITY IMPORTANT, ERROR HANDLING WHEN IMPROPER INPUT IMPORTANT
-
 db = sys.argv[1]
 conn = sqlite3.connect(db)
 cursor = conn.cursor()
@@ -209,7 +206,7 @@ def register_birth(user): #needs nbregplace and new unique id generator
 	
 	
 
-def register_marriage(user): #only thing needed is regplace and new uniqueID generator
+def register_marriage(user):
 	'''The user should be able to provide the names of the partners and the system should assign the registration date and place and a unique registration number as discussed in registering a birth. 
 	If any of the partners is not found in the database, the system should get information about the partner including first name, last name, birth date, birth place, address and phone. 
 	For each partner, any column other than the first name and last name can be null if it is not provided.'''
@@ -222,8 +219,7 @@ def register_marriage(user): #only thing needed is regplace and new uniqueID gen
 		else:
 				conn.commit()
 		break
-	marriagedate = date.today() #Could use SQL datetime instead, not sure how this will convert
-	#marriageplace = input("Where is the couple getting married?: ") #THIS needs to be the user's city again
+	marriagedate = date.today()
 	marriageplace = str(user)
 	p1fname = input("What is partner 1's first name?: ")
 	p1lname = input("What is partner 1's last name?: ")
@@ -265,7 +261,7 @@ def register_marriage(user): #only thing needed is regplace and new uniqueID gen
 	print("Registration Complete! Returning to Agent Options")
 
 
-def renew_vehicle_Reg(): #SWITCH FOR PYTHON 2, FULLY FUNCTIONAL AS OF RIGHT NOW
+def renew_vehicle_Reg():
 	'''The user should be able to provide an existing registration number and renew the registration. 
 	The system should set the new expiry date to one year from today's date if the current registration either has expired or expires today. 
 	Otherwise, the system should set the new expiry to one year after the current expiry date.'''
@@ -279,7 +275,6 @@ def renew_vehicle_Reg(): #SWITCH FOR PYTHON 2, FULLY FUNCTIONAL AS OF RIGHT NOW
 	#rawexpirystring = rawexpirystring.translate(None, '[(,)]') #This DOESNT work in python 3, but DOES in python 2
 	rawexpirystring = rawexpirystring.translate({ord(i):None for i in '[(,)]'}) #This DOESNT work in python 2, but DOES in python 3
 	currentexpiry = datetime.strptime(rawexpirystring, "'%Y-%m-%d'").date()
-	#currentexpiry = str(rawexpiry).strftime("%Y-%m-%d")
 	todays_date = date.today()
 
 	if currentexpiry <= todays_date:
@@ -293,7 +288,7 @@ def renew_vehicle_Reg(): #SWITCH FOR PYTHON 2, FULLY FUNCTIONAL AS OF RIGHT NOW
 	print("Vehicle registration renewed! Returning.")
 
 
-def process_bill_of_sale(): #NEED TO CONTROL FOR EXISTING LICENSE PLATE NO. IF HAVE TIME, not explicitly specified. NEED TO SWAP FOR PYTHON 2
+def process_bill_of_sale():
 	'''The user should be able to record a bill of sale by providing the vin of a car, the name of the current owner, the name of the new owner, and a plate number for the new registration. 
 	If the name of the current owner (that is provided) does not match the name of the most recent owner of the car in the system, the transfer cannot be made. 
 	When the transfer can be made, the expiry date of the current registration is set to today's date and a 
@@ -356,12 +351,12 @@ def process_bill_of_sale(): #NEED TO CONTROL FOR EXISTING LICENSE PLATE NO. IF H
 		unique_registration_number = randrange(1000000000)
 		while True:
 			cursor.execute("SELECT EXISTS(SELECT 1 FROM registrations WHERE regno=?)", (unique_registration_number,))
-			temp = cursor.fetchall()
-			conn.commit()
+			temp = cursor.fetchall()			
 			if int(temp[0][0]) == 1:
 				unique_registration_number = randrange(1000000000)
 			else:
-				break
+				conn.commit()
+			break
 		new_owner_data = (unique_registration_number, new_registration_date, new_expiry_date, entered_plate, entered_vin, new_owner_fname, new_owner_lname)
 		cursor.execute("INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?,?,?,?,?,?,?)", new_owner_data)
 		conn.commit()
@@ -370,7 +365,7 @@ def process_bill_of_sale(): #NEED TO CONTROL FOR EXISTING LICENSE PLATE NO. IF H
 
 
 
-def process_payment(): #FINISHED, MODIFY FOR PYTHON 2
+def process_payment():
 	'''The user should be able to record a payment by entering a valid ticket number and an amount. 
 	The payment date is automatically set to the day of the payment (today's date). 
 	A ticket can be paid in multiple payments but the sum of those payments cannot exceed the fine amount of the ticket.'''
@@ -423,14 +418,14 @@ def process_payment(): #FINISHED, MODIFY FOR PYTHON 2
 
 
 
-def get_driver_abstract(): #NEED TO ADJUST FOR PYTHON 2
+def get_driver_abstract():
 	#The user should be able to enter a first name and a last name and get a driver abstract, which includes number of tickets, the number of demerit notices, the total number of demerit points received both within the past two years and within the lifetime. 
 	#The user should be given the option to see the tickets ordered from the latest to the oldest. For each ticket, you will report the ticket number, 
 	#the violation date, the violation description, the fine, the registration number and the make and model of the car for which the ticket is issued. 
 	#If there are more than 5 tickets, at most 5 tickets will be shown at a time, and the user can select to see more.
 	abstract_fname = input("What is the driver's first name?: ")
 	abstract_lname = input("What is the driver's last name?: ")
-	cursor.execute("SELECT regno FROM registrations WHERE ? = fname AND ? = lname", (abstract_fname, abstract_lname))
+	cursor.execute("SELECT regno FROM registrations WHERE ? LIKE fname AND ? LIKE lname", (abstract_fname, abstract_lname))
 	abstract_regno = cursor.fetchall()
 
 	if len(abstract_regno) > 1:
@@ -510,7 +505,7 @@ def get_driver_abstract(): #NEED TO ADJUST FOR PYTHON 2
 						else:
 							return
 
-	else:
+	if len(abstract_regno) == 1:
 		abstract_regno_string = str(abstract_regno)
 		#abstract_regno_string = abstract_regno_string.translate(None, '[("",)]') #This DOESNT work in python 3, but DOES in python 2
 		abstract_regno_string = abstract_regno_string.translate({ord(i):None for i in '[("",)]'}) #This DOESNT work in python 2, but DOES in python 3
@@ -555,15 +550,18 @@ def get_driver_abstract(): #NEED TO ADJUST FOR PYTHON 2
 
 		if optional_order == "y":
 			cursor.execute("SELECT t.tno, t.vdate, t.violation, t.fine, t.regno, v.make, v.model FROM tickets t LEFT OUTER JOIN registrations r ON r.regno = t.regno LEFT OUTER JOIN vehicles v on v.vin = r.vin WHERE ? = t.regno ORDER BY t.vdate DESC", (abstract_regno_string,))
-			abstract_info = cursor.fetchall() #might need to move this out of the for loop
+			abstract_info = cursor.fetchall()
 			for row in abstract_info:
 				print(row)
 
 		elif optional_order == "n":
 			cursor.execute("SELECT t.tno, t.vdate, t.violation, t.fine, t.regno, v.make, v.model FROM tickets t LEFT OUTER JOIN registrations r ON r.regno = t.regno LEFT OUTER JOIN vehicles v on v.vin = r.vin WHERE ? = t.regno", (abstract_regno_string,))
-			abstract_info = cursor.fetchall() #might need to move this out of the for loop
+			abstract_info = cursor.fetchall()
 			for row in abstract_info:
 				print(row)
+	elif len(abstract_regno) == 0:
+		print("This person has no tickets on file! Returning.")
+		return
 
 def logout():
 	print("Logging out....")

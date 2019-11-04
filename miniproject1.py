@@ -68,16 +68,16 @@ def officer_prompt():
 	display_officer_options()
 
 	while True:
-		input_option = input("Select option: ")
-		option = int(input_option)
+		input_option = str(input("Select option: "))
+		option = input_option
 
-		if option == 0:
+		if option == '0':
 			issue_ticket()
 			display_officer_options()
-		elif option == 1:
+		elif option == '1':
 			find_car_owner()
 			display_officer_options()
-		elif option == 2:
+		elif option == '2':
 			logout()
 		else:
 			print("****ERROR***** invalid option please try again")
@@ -89,28 +89,28 @@ def agent_prompt(user):
 	display_agent_options()
 
 	while True:
-		input_option = input("Selection option: ")
-		option = int(input_option)
+		input_option = str(input("Selection option: "))
+		option = input_option
 
-		if option == 0:
+		if option == '0':
 			register_birth(user)
 			display_agent_options()
-		elif option == 1:
+		elif option == '1':
 			register_marriage(user)
 			display_agent_options()
-		elif option == 2:
+		elif option == '2':
 			renew_vehicle_Reg()
 			display_agent_options()
-		elif option == 3:
+		elif option == '3':
 			process_bill_of_sale()
 			display_agent_options()
-		elif option == 4:
+		elif option == '4':
 			process_payment()
 			display_agent_options()
-		elif option == 5:
+		elif option == '5':
 			get_driver_abstract()
 			display_agent_options()
-		elif option == 6:
+		elif option == '6':
 			logout()
 		else:
 			print("****ERROR***** invalid option please try again")

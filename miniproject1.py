@@ -1,6 +1,7 @@
 import sqlite3
 import sys
 import random
+from random import randrange
 from datetime import datetime, timedelta, date, time
 '''Resources for SQLite in python and implementing user logins
 https://eclass.srv.ualberta.ca/pluginfile.php/5149362/mod_label/intro/SQLite-in-Python-1.pdf -- BEST
@@ -539,7 +540,7 @@ def issue_ticket():
         conn.commit()
 
         if regInfo == []:
-            option = input('Registration number not found would you like to try again (y/n): ')
+            option = input('Registration number not found would you like to try again? (y/n): ')
             if option == 'n':
                 return 
         elif regInfo[0][0] == regno:
